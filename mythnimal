@@ -1,0 +1,12 @@
+#!/usr/bin/env python
+# -*- coding: iso-8859-1 -*-
+
+import sys
+from PyQt4 import QtGui
+from nemebean.mythnimal.MainForm import MainForm
+
+app = QtGui.QApplication(sys.argv)
+
+form = MainForm()
+
+sys.exit(app.exec_())
