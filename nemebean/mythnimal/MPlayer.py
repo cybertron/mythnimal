@@ -21,7 +21,7 @@ class MPlayer(QObject):
       else:
          return str(minutes).zfill(2) + ':' + str(seconds).zfill(2)
 
-   def __init__(self, label, extraOptions = ''):
+   def __init__(self, label, filename, extraOptions = ''):
       QObject.__init__(self)
 
       self.outputLabel = label
@@ -30,11 +30,17 @@ class MPlayer(QObject):
       self.logWidget = None
       self.lastVolume = time.time()
       self.lastVolumeValue = 0
+      self.filename = filename
 
       self.process = QProcess()
       self.process.readyReadStandardOutput.connect(self.readStdout)
       self.process.finished.connect(self.finished)
       self.ensureRunning()
+      
+      self.infoProcess = QProcess()
+      self.infoProcess.readyReadStandardOutput.connect(self.infoStdout)
+      self.infoProcess.finished.connect(self.infoFinished)
+      self.infoFinished()
       
       self.timer = QTimer()
       self.timer.setInterval(250)
@@ -59,6 +65,7 @@ class MPlayer(QObject):
       fullCommand += ' -input nodefault-bindings:conf=' + os.devnull
       fullCommand += ' -wid ' + wid
       fullCommand += ' ' + self.extraOptions
+      fullCommand += ' ' + self.filename
       if self.process.state() == QProcess.NotRunning:
          if self.logWidget:
             self.logWidget.append("MPlayer Command: " + fullCommand)
@@ -101,6 +108,11 @@ class MPlayer(QObject):
             self.position = float(parts[1]) - self.startTime
             self.foundPosition.emit()
             continue
+         
+         if line.startswith('ANS_length'):
+            parts = line.split('=')
+            self.length = float(parts[1])
+            
          # Not sure why this gets output so much, but it does so filter it out
          if line.startswith('PROGRAM_ID'):
             continue
@@ -141,7 +153,6 @@ class MPlayer(QObject):
 
          if line.find("ID_LENGTH=") != -1:
             self.length = int(float(line[10:]))
-            print "Found length:", self.formattedTime()
 
          if line.find("ID_VIDEO_WIDTH") != -1:
             self.width = int(line[15:])
@@ -183,8 +194,27 @@ class MPlayer(QObject):
       self.clear()
       self.playing = False
       self.fileFinished.emit()
+      
+      
+   def infoFinished(self):
+      self.infoTimer = QTimer()
+      self.infoTimer.setSingleShot(True)
+      self.infoTimer.timeout.connect(self.startInfoProcess)
+      self.infoTimer.start(1000)
+      
+      
+   def startInfoProcess(self):
+      fullCommand = 'mplayer -identify -quiet -frames 0 -vo null -ao null ' + self.filename
+      self.infoProcess.start(fullCommand)
+      
+      
+   def infoStdout(self):
+      lines = self.infoProcess.readAllStandardOutput().data().splitlines()
+      for line in lines:
+         if line.find("ID_LENGTH=") != -1:
+            self.length = int(float(line[10:]))
 
-
+            
    def setVolume(self, vol):
       self.process.write("pausing_keep_force volume " + str(vol) + " 1\n")
       

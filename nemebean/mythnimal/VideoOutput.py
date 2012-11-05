@@ -42,6 +42,10 @@ class VideoOutput(QWidget):
    def setFitToWidth(self, fit):
       self.videoLabel.fitToWidth = fit
       self.videoLabel.aspectResize(self.width(), self.height())
+      
+   def toggleFitToWidth(self):
+      self.setFitToWidth(not self.videoLabel.fitToWidth)
+      
          
          
    def keyPressEvent(self, event):

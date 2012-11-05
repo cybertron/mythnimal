@@ -17,31 +17,45 @@ class Player(QObject):
       
       self.filename = filename
       
-      self.mplayer = MPlayer(self.videoOutput.videoLabel, self.buildMPlayerOptions())
+      from MainForm import MainForm
+      self.mplayer = MPlayer(self.videoOutput.videoLabel,
+                             os.path.join(MainForm.settings['mythFileDir'], self.filename),
+                             self.buildMPlayerOptions())
       self.mplayer.foundAspect.connect(self.setAspect)
       self.mplayer.foundPosition.connect(self.updatePosition)
+      self.mplayer.fileFinished.connect(self.end)
       
       self.videoOutput.showFullScreen()
       
       
    def buildMPlayerOptions(self):
-      from MainForm import MainForm
       opts = '-vf yadif '
       opts += '-framedrop ' # yadif can have problems keeping up on HD content
-      opts += os.path.join(MainForm.settings['mythFileDir'], self.filename)
       return opts
       
       
    def keyPressHandler(self, event):
-      if event.key() == Qt.Key_Space:
+      key = event.key()
+      if key == Qt.Key_Space:
          self.mplayer.play()
-      elif event.key() == Qt.Key_Left:
-         self.seek(-10)
-      elif event.key() == Qt.Key_Right:
-         self.seek(10)
-      elif event.key() == Qt.Key_Escape:
-         self.mplayer.end()
-         self.videoOutput.hide()
+         if not self.mplayer.playing:
+            self.seekOverlay.show()
+         else:
+            self.seekOverlay.hide()
+      elif key == Qt.Key_Left:
+         self.seek(-5)
+      elif key == Qt.Key_Right:
+         self.seek(30)
+      elif key == Qt.Key_Down:
+         self.seek(-600)
+      elif key == Qt.Key_Up:
+         self.seek(600)
+      elif key == Qt.Key_Escape:
+         self.end()
+      elif key == Qt.Key_W:
+         self.videoOutput.toggleFitToWidth()
+      elif key == Qt.Key_I:
+         self.seekOverlay.showTimed()
       else:
          return False
       return True
@@ -50,6 +64,12 @@ class Player(QObject):
    def seek(self, amount):
       self.seekOverlay.showTimed()
       self.mplayer.seekRelative(amount)
+      
+      
+   def end(self):
+      self.mplayer.end()
+      self.videoOutput.hide()
+      self.seekOverlay.hide()
       
       
    def setAspect(self):
@@ -93,6 +113,7 @@ class SeekOverlay(QDialog):
          
       self.timer = QTimer()
       self.timer.setInterval(2000)
+      self.timer.setSingleShot(True)
       self.timer.timeout.connect(self.hide)
       
       self.setupUI()
