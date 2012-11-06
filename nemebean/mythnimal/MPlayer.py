@@ -76,9 +76,8 @@ class MPlayer(QObject):
    def end(self):
       self.timer.stop()
       self.process.terminate()
-      time.sleep(1)
-      self.process.kill()
       time.sleep(.1)
+      self.process.kill()
 
 
    def seek(self, position):

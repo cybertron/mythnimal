@@ -1,6 +1,6 @@
 # -*- coding: iso-8859-1 -*-
 
-from PyQt4.QtGui import QWidget, QGridLayout, QLabel, QSizePolicy, QRegion, QPalette
+from PyQt4.QtGui import QWidget, QGridLayout, QLabel, QSizePolicy, QRegion
 from PyQt4.QtCore import QTimer, pyqtSignal, Qt
 
 class VideoOutput(QWidget):
@@ -8,22 +8,16 @@ class VideoOutput(QWidget):
    def __init__(self, parent, keyHandler):
       QWidget.__init__(self, parent)
 
-      self.fullscreen = False
       self.keyPressHandler = keyHandler
-      self.frameHeight = 0
 
       self.createUI()
       
       self.setMouseTracking(True)
       self.setWindowTitle("Mythnimal Video Output")
-      self.hide()
       
       
    def createUI(self):
-      palette = QPalette()
-      palette.setColor(QPalette.Background, Qt.black)
-      self.setPalette(palette)
-      self.setAutoFillBackground(True)
+      self.setStyleSheet('QWidget { background-color: black; }')
       
       self.videoLabel = VideoOutputLabel(self)
 
@@ -45,7 +39,6 @@ class VideoOutput(QWidget):
       
    def nextFitToWidth(self):
       self.setFitToWidth((self.videoLabel.fitToWidth + 1) % 3)
-      
          
          
    def keyPressEvent(self, event):
@@ -75,9 +68,7 @@ class VideoOutputLabel(QLabel):
          self.move(0, (height - newHeight) / 2)
       elif self.fitToWidth == 1:
          newHeight = int(float(self.videoHeight * width) / self.videoWidth)
-         print newHeight
          newHeight = (newHeight + height) / 2
-         print newHeight, height
          newWidth = int(float(self.videoWidth * newHeight) / self.videoHeight)
          self.setSize(newWidth, newHeight)
          self.move((width - newWidth) / 2, (height - newHeight) / 2)

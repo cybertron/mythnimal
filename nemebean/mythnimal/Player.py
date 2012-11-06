@@ -16,10 +16,9 @@ class Player(QObject):
       
       self.videoOutput = VideoOutput(None, self.keyPressHandler)
       self.createOverlays()
-      
       self.videoOutput.readyForOverlay.connect(self.placeOverlays)
-      self.videoOutput.show()
       self.videoOutput.move(x, y)
+      self.videoOutput.showFullScreen()
       
       from MainForm import MainForm
       self.mplayer = MPlayer(self.videoOutput.videoLabel,
@@ -28,8 +27,6 @@ class Player(QObject):
       self.mplayer.foundAspect.connect(self.setAspect)
       self.mplayer.foundPosition.connect(self.updatePosition)
       self.mplayer.fileFinished.connect(self.end)
-      
-      self.videoOutput.showFullScreen()
       
       
    def buildMPlayerOptions(self):
@@ -89,8 +86,10 @@ class Player(QObject):
          self.videoOutput.setSize(self.mplayer.aspect * 1000, 1000)
          # Need to trigger a resize event in order to make sure the video is resized correctly for the new aspect
          # Resize to same size won't do the trick
+         width = self.videoOutput.width()
+         height = self.videoOutput.height()
          self.videoOutput.resize(1, 1)
-         self.videoOutput.resize(self.videoOutput.width(), self.videoOutput.height())
+         self.videoOutput.resize(width, height)
          
          
    def updatePosition(self):
@@ -99,7 +98,6 @@ class Player(QObject):
       if self.nextSkip < len(self.starts):
          if self.mplayer.position > (float(self.starts[self.nextSkip]) / self.mplayer.fps):
             seekAmount = float(self.ends[self.nextSkip]) / self.mplayer.fps - self.mplayer.position
-            print seekAmount
             self.mplayer.seekRelative(seekAmount)
             self.seekOverlay.showTimed()
             self.nextSkip += 1
