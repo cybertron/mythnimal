@@ -1,7 +1,7 @@
 from PyQt4.QtGui import *
 from Settings import Settings
 from Player import Player
-from MythDB import MythDB
+from MythDB import MythDB, Program
 from MenuWidget import MenuWidget
 from ShowMenuItem import ShowMenuItem
 from ProgramMenuItem import ProgramMenuItem
@@ -53,7 +53,7 @@ class MainForm(QDialog):
       self.showFilter = '%'
       shows = self.mythDB.showList()
       for i in shows:
-         self.showMenu.add(ShowMenuItem(i[0]))
+         self.showMenu.add(ShowMenuItem(i.title))
          
       self.refreshProgramList()
          
@@ -83,6 +83,6 @@ class MainForm(QDialog):
       
       
    def programSelected(self, index):
-      self.player = Player(self.x(), self.y(), self.programMenu.selectedItem().id)
+      self.player = Player(self.x(), self.y(), self.programMenu.selectedItem().id, self.mythDB)
       
       

@@ -1,18 +1,19 @@
 from MenuItem import MenuItem
 from PyQt4.QtGui import QHBoxLayout, QLabel
+from MythDB import Program
 
 class ProgramMenuItem(MenuItem):
    def __init__(self, programData):
       MenuItem.__init__(self)
       
       self.programData = programData
-      self.id = programData[0]
+      self.id = programData.basename
       
       self.layout = QHBoxLayout(self)
       
-      text = programData[1]
-      if programData[2] != '':
-         text += ' - ' + programData[2]
+      text = programData.title
+      if programData.subtitle != '':
+         text += ' - ' + programData.subtitle
       self.programLabel = QLabel(text)
       self.layout.addWidget(self.programLabel)
       

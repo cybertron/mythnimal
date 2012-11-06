@@ -161,12 +161,14 @@ class MPlayer(QObject):
             self.height = int(line[16:])
 
          if line.find("ID_VIDEO_ASPECT") != -1:
-            print line[16:]
             self.aspect = float(line[16:])
             self.foundAspect.emit()
             
          if line.startswith('ID_START_TIME'):
             self.startTime = float(line[14:])
+            
+         if line.startswith('ID_VIDEO_FPS'):
+            self.fps = float(line[13:])
 
       sys.stdout.flush()
 

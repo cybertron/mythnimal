@@ -43,8 +43,8 @@ class VideoOutput(QWidget):
       self.videoLabel.fitToWidth = fit
       self.videoLabel.aspectResize(self.width(), self.height())
       
-   def toggleFitToWidth(self):
-      self.setFitToWidth(not self.videoLabel.fitToWidth)
+   def nextFitToWidth(self):
+      self.setFitToWidth((self.videoLabel.fitToWidth + 1) % 3)
       
          
          
@@ -58,7 +58,7 @@ class VideoOutputLabel(QLabel):
       QWidget.__init__(self, parent)
       self.videoWidth = 1
       self.videoHeight = 1
-      self.fitToWidth = False
+      self.fitToWidth = 0
       self.setMouseTracking(True)
       
    
@@ -69,10 +69,18 @@ class VideoOutputLabel(QLabel):
       
       
    def aspectResize(self, width, height):
-      if (float(width) / float(height) < float(self.videoWidth) / float(self.videoHeight)) or self.fitToWidth:
+      if (float(width) / float(height) < float(self.videoWidth) / float(self.videoHeight)) or self.fitToWidth == 2:
          newHeight = int(float(self.videoHeight * width) / self.videoWidth)
          self.setSize(width, newHeight)
          self.move(0, (height - newHeight) / 2)
+      elif self.fitToWidth == 1:
+         newHeight = int(float(self.videoHeight * width) / self.videoWidth)
+         print newHeight
+         newHeight = (newHeight + height) / 2
+         print newHeight, height
+         newWidth = int(float(self.videoWidth * newHeight) / self.videoHeight)
+         self.setSize(newWidth, newHeight)
+         self.move((width - newWidth) / 2, (height - newHeight) / 2)
       else:
          newWidth = int(float(self.videoWidth * height) / self.videoHeight)
          self.setSize(newWidth, height)

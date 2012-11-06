@@ -2,11 +2,17 @@ from PyQt4.QtCore import QObject, Qt, QTimer
 from PyQt4.QtGui import QDialog, QHBoxLayout, QLabel, QProgressBar, QX11Info
 from VideoOutput import VideoOutput
 from MPlayer import MPlayer
+from MythDB import Markup
 import os
 
 class Player(QObject):
-   def __init__(self, x, y, filename):
+   def __init__(self, x, y, filename, mythDB):
       QObject.__init__(self)
+      
+      self.filename = filename
+      self.mythDB = mythDB
+      
+      self.getSkipList()
       
       self.videoOutput = VideoOutput(None, self.keyPressHandler)
       self.createOverlays()
@@ -14,8 +20,6 @@ class Player(QObject):
       self.videoOutput.readyForOverlay.connect(self.placeOverlays)
       self.videoOutput.show()
       self.videoOutput.move(x, y)
-      
-      self.filename = filename
       
       from MainForm import MainForm
       self.mplayer = MPlayer(self.videoOutput.videoLabel,
@@ -53,7 +57,7 @@ class Player(QObject):
       elif key == Qt.Key_Escape:
          self.end()
       elif key == Qt.Key_W:
-         self.videoOutput.toggleFitToWidth()
+         self.videoOutput.nextFitToWidth()
       elif key == Qt.Key_I:
          self.seekOverlay.showTimed()
       else:
@@ -72,6 +76,14 @@ class Player(QObject):
       self.seekOverlay.hide()
       
       
+   def getSkipList(self):
+      skips = self.mythDB.skipList(self.filename)
+      self.starts = skips[0]
+      self.ends = skips[1]
+      self.nextSkip = 0
+      
+      
+      
    def setAspect(self):
       if self.mplayer.aspect > .0001:
          self.videoOutput.setSize(self.mplayer.aspect * 1000, 1000)
@@ -83,6 +95,14 @@ class Player(QObject):
          
    def updatePosition(self):
       self.seekOverlay.setTime(self.mplayer.position, self.mplayer.length)
+      
+      if self.nextSkip < len(self.starts):
+         if self.mplayer.position > (float(self.starts[self.nextSkip]) / self.mplayer.fps):
+            seekAmount = float(self.ends[self.nextSkip]) / self.mplayer.fps - self.mplayer.position
+            print seekAmount
+            self.mplayer.seekRelative(seekAmount)
+            self.seekOverlay.showTimed()
+            self.nextSkip += 1
          
          
    def createOverlays(self):
@@ -122,23 +142,16 @@ class SeekOverlay(QDialog):
    def setupUI(self):
       self.layout = QHBoxLayout(self)
       
-      self.currTime = QLabel()
-      self.layout.addWidget(self.currTime)
-      
       self.timeBar = QProgressBar()
       self.layout.addWidget(self.timeBar)
-      
-      self.totalTime = QLabel()
-      self.layout.addWidget(self.totalTime)
       
       
    def setTime(self, current, total):
       current = int(current)
       total = int(total)
-      self.totalTime.setText(MPlayer.formatTime(total))
-      self.currTime.setText(MPlayer.formatTime(current))
       self.timeBar.setMaximum(total)
       self.timeBar.setValue(current)
+      self.timeBar.setFormat(MPlayer.formatTime(current) + '/' + MPlayer.formatTime(total))
       
       
    def showTimed(self):
