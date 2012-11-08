@@ -11,8 +11,10 @@ class Player(QObject):
       
       self.filename = filename
       self.mythDB = mythDB
+      self.ended = False
       
       self.getSkipList()
+      self.bookmark = self.mythDB.bookmark(self.filename)
       
       self.videoOutput = VideoOutput(None, self.keyPressHandler)
       self.createOverlays()
@@ -27,10 +29,12 @@ class Player(QObject):
       self.mplayer.foundAspect.connect(self.setAspect)
       self.mplayer.foundPosition.connect(self.updatePosition)
       self.mplayer.fileFinished.connect(self.end)
+      self.mplayer.playbackStarted.connect(self.playbackStarted)
       
       
    def buildMPlayerOptions(self):
-      opts = '-vf yadif '
+      opts = '-osdlevel 0 -cache 25000 -cache-min 1 '
+      opts += '-vf yadif '
       opts += '-framedrop ' # yadif can have problems keeping up on HD content
       return opts
       
@@ -52,9 +56,15 @@ class Player(QObject):
       elif key == Qt.Key_Up:
          self.seek(600)
       elif key == Qt.Key_Escape:
-         self.end()
+         self.end(False)
       elif key == Qt.Key_W:
-         self.videoOutput.nextFitToWidth()
+         zoom = self.videoOutput.nextZoom()
+         if zoom == 0:
+            self.showMessage('Zoom: Off')
+         elif zoom == 1:
+            self.showMessage('Zoom: 10%')
+         else:
+            self.showMessage('Zoom: 20%')
       elif key == Qt.Key_I:
          self.seekOverlay.showTimed()
       else:
@@ -67,10 +77,16 @@ class Player(QObject):
       self.mplayer.seekRelative(amount)
       
       
-   def end(self):
-      self.mplayer.end()
-      self.videoOutput.hide()
-      self.seekOverlay.hide()
+   def end(self, eof = True):
+      #  This gets called twice in some cases, but we only want to do it once
+      if not self.ended:
+         self.mplayer.end()
+         self.videoOutput.hide()
+         self.seekOverlay.hide()
+         self.messageOverlay.hide()
+         self.mythDB.saveBookmark(self.mplayer, eof)
+         self.ended = True
+      
       
       
    def getSkipList(self):
@@ -91,20 +107,33 @@ class Player(QObject):
          self.videoOutput.resize(1, 1)
          self.videoOutput.resize(width, height)
          
+   def playbackStarted(self):
+      if self.bookmark > 0:
+         # Ignore commercial skips prior to the bookmark
+         if len(self.starts) > 0:
+            while self.starts[self.nextSkip] < self.bookmark:
+               self.nextSkip += 1
+               
+         self.mplayer.seek(int(float(self.bookmark) / self.mplayer.fps))
+         self.bookmark = 0 # Don't do this again, even if we get the signal again
+         
          
    def updatePosition(self):
       self.seekOverlay.setTime(self.mplayer.position, self.mplayer.length)
       
       if self.nextSkip < len(self.starts):
-         if self.mplayer.position > (float(self.starts[self.nextSkip]) / self.mplayer.fps):
-            seekAmount = float(self.ends[self.nextSkip]) / self.mplayer.fps - self.mplayer.position
-            self.mplayer.seekRelative(seekAmount)
-            self.seekOverlay.showTimed()
+         start = float(self.starts[self.nextSkip]) / self.mplayer.fps
+         end = float(self.ends[self.nextSkip]) / self.mplayer.fps
+         if self.mplayer.position > start:
+            seekAmount = end - self.mplayer.position
+            self.seek(seekAmount)
             self.nextSkip += 1
+            self.showMessage('Skipped ' + MPlayer.formatTime(int(end - start)))
          
          
    def createOverlays(self):
       self.seekOverlay = SeekOverlay(self.keyPressHandler, self.videoOutput)
+      self.messageOverlay = MessageOverlay(self.keyPressHandler, self.videoOutput)
       
    def placeOverlays(self):
       vidWidth = self.videoOutput.size().width()
@@ -116,9 +145,20 @@ class Player(QObject):
       
       self.seekOverlay.resize(vidWidth - seekMargin * 2, self.seekOverlay.size().height())
       self.seekOverlay.move(x, y)
+      
+      self.messageOverlay.resize(vidWidth / 2, vidHeight / 8)
+      x = vidWidth / 2 + self.videoOutput.pos().x() - self.messageOverlay.size().width() / 2
+      self.messageOverlay.move(x, self.videoOutput.pos().y()) 
+      
+      
+   def showMessage(self, message):
+      self.messageOverlay.setMessage(message)
+      self.messageOverlay.showTimed()
          
-         
-class SeekOverlay(QDialog):
+      
+      
+from PyQt4.QtGui import QVBoxLayout
+class Overlay(QDialog):
    def __init__(self, keyPressHandler, parent = None):
       QDialog.__init__(self, parent)
       
@@ -130,9 +170,23 @@ class SeekOverlay(QDialog):
          self.setAttribute(Qt.WA_TranslucentBackground)
          
       self.timer = QTimer()
-      self.timer.setInterval(2000)
       self.timer.setSingleShot(True)
       self.timer.timeout.connect(self.hide)
+      
+      
+   def showTimed(self, interval = 2000):
+      self.show()
+      self.raise_()
+      self.timer.start(interval)
+      
+   def keyPressEvent(self, event):
+      if not self.keyPressHandler(event):
+         Overlay.keyPressEvent(self, event)
+      
+      
+class SeekOverlay(Overlay):
+   def __init__(self, keyPressHandler, parent = None):
+      Overlay.__init__(self, keyPressHandler, parent)
       
       self.setupUI()
       
@@ -152,12 +206,16 @@ class SeekOverlay(QDialog):
       self.timeBar.setFormat(MPlayer.formatTime(current) + '/' + MPlayer.formatTime(total))
       
       
-   def showTimed(self):
-      self.show()
-      self.raise_()
-      self.timer.start()
+class MessageOverlay(Overlay):
+   def __init__(self, keyPressHandler, parent = None):
+      Overlay.__init__(self, keyPressHandler, parent)
+      
+      self.layout = QVBoxLayout(self)
+      self.message = QLabel()
+      self.message.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+      self.layout.addWidget(self.message)
       
       
-   def keyPressEvent(self, event):
-      if not self.keyPressHandler(event):
-         QDialog.keyPressEvent(self, event)
+   def setMessage(self, message):
+      self.message.setText(message)
+      

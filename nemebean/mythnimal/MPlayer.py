@@ -61,7 +61,7 @@ class MPlayer(QObject):
       # The int may help with hypothetical future Windows compatibility
       wid = str(int(wid))
 
-      fullCommand = 'mplayer -slave -identify -quiet -osdlevel 0 -cache 25000 -cache-min 1 '
+      fullCommand = 'mplayer -slave -identify -quiet'
       fullCommand += ' -input nodefault-bindings:conf=' + os.devnull
       fullCommand += ' -wid ' + wid
       fullCommand += ' ' + self.extraOptions

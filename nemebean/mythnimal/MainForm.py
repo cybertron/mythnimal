@@ -5,6 +5,7 @@ from MythDB import MythDB, Program
 from MenuWidget import MenuWidget
 from ShowMenuItem import ShowMenuItem
 from ProgramMenuItem import ProgramMenuItem
+import os
 
 class MainForm(QDialog):
    settings = Settings()
@@ -30,16 +31,35 @@ class MainForm(QDialog):
       self.showMenu.selected.connect(self.showSelected)
       self.showMenu.exit.connect(self.close)
       self.showMenu.selectionChanged.connect(self.filterByShow)
-      self.columnLayout.addWidget(self.showMenu)
+      self.columnLayout.addWidget(self.showMenu, 1)
       
       self.programMenu = MenuWidget()
       self.programMenu.selected.connect(self.programSelected)
       self.programMenu.exit.connect(self.exitProgramMenu)
       self.programMenu.selectionChanged.connect(self.displayProgramDetails)
-      self.columnLayout.addWidget(self.programMenu)
+      self.columnLayout.addWidget(self.programMenu, 1)
       
       self.programInfoLayout = QVBoxLayout()
-      self.columnLayout.addLayout(self.programInfoLayout)
+      self.programThumbnail = self.wrappedLabel()
+      self.programInfoLayout.addWidget(self.programThumbnail)
+      
+      self.programChannel = self.wrappedLabel()
+      self.programInfoLayout.addWidget(self.programChannel)
+      self.programTitle = self.wrappedLabel()
+      self.programInfoLayout.addWidget(self.programTitle)
+      self.programSubtitle = self.wrappedLabel()
+      self.programInfoLayout.addWidget(self.programSubtitle)
+      self.programDescription = QTextEdit()
+      self.programInfoLayout.addWidget(self.programDescription)
+      
+      
+      self.columnLayout.addLayout(self.programInfoLayout, 1)
+      
+      
+   def wrappedLabel(self):
+      label = QLabel()
+      label.setWordWrap(True)
+      return label
       
       
    def initSettings(self):
@@ -47,7 +67,7 @@ class MainForm(QDialog):
       
    def refreshShowList(self):
       self.showMenu.reset()
-      newItem = ShowMenuItem('All')
+      newItem = ShowMenuItem('[All]')
       newItem.id = '%'
       self.showMenu.add(newItem)
       self.showFilter = '%'
@@ -79,7 +99,15 @@ class MainForm(QDialog):
       
       
    def displayProgramDetails(self):
-      pass
+      details = self.mythDB.getProgram(self.programMenu.selectedItem().id)
+      channel = self.mythDB.getChannel(details.chanid)
+      filename = os.path.join(self.settings['mythFileDir'], details.basename)
+      filename += '.png'
+      self.programThumbnail.setPixmap(QPixmap(filename))
+      self.programChannel.setText(channel.channum + ' ' + channel.name)
+      self.programTitle.setText(details.title)
+      self.programSubtitle.setText(details.subtitle)
+      self.programDescription.setText(details.description)
       
       
    def programSelected(self, index):

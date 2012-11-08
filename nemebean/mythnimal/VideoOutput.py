@@ -33,12 +33,14 @@ class VideoOutput(QWidget):
       self.readyForOverlay.emit()
       
       
-   def setFitToWidth(self, fit):
-      self.videoLabel.fitToWidth = fit
+   def setZoom(self, zoom):
+      self.videoLabel.zoom = zoom
       self.videoLabel.aspectResize(self.width(), self.height())
       
-   def nextFitToWidth(self):
-      self.setFitToWidth((self.videoLabel.fitToWidth + 1) % 3)
+   def nextZoom(self):
+      newVal = (self.videoLabel.zoom + 1) % 3
+      self.setZoom(newVal)
+      return newVal
          
          
    def keyPressEvent(self, event):
@@ -51,7 +53,7 @@ class VideoOutputLabel(QLabel):
       QWidget.__init__(self, parent)
       self.videoWidth = 1
       self.videoHeight = 1
-      self.fitToWidth = 0
+      self.zoom = 0
       self.setMouseTracking(True)
       
    
@@ -62,19 +64,29 @@ class VideoOutputLabel(QLabel):
       
       
    def aspectResize(self, width, height):
-      if (float(width) / float(height) < float(self.videoWidth) / float(self.videoHeight)) or self.fitToWidth == 2:
+      if (float(width) / float(height) < float(self.videoWidth) / float(self.videoHeight)):
          newHeight = int(float(self.videoHeight * width) / self.videoWidth)
          self.setSize(width, newHeight)
          self.move(0, (height - newHeight) / 2)
-      elif self.fitToWidth == 1:
-         newHeight = int(float(self.videoHeight * width) / self.videoWidth)
-         newHeight = (newHeight + height) / 2
-         newWidth = int(float(self.videoWidth * newHeight) / self.videoHeight)
-         self.setSize(newWidth, newHeight)
-         self.move((width - newWidth) / 2, (height - newHeight) / 2)
       else:
          newWidth = int(float(self.videoWidth * height) / self.videoHeight)
          self.setSize(newWidth, height)
          self.move((width - newWidth) / 2, 0)
+         
+      if self.zoom == 1:
+         self.applyZoom(1.1)
+      if self.zoom == 2:
+         self.applyZoom(1.2)
+         
+   def applyZoom(self, amount):
+      newWidth = int(self.size().width() * amount)
+      newHeight = int(self.size().height() * amount)
+      moveX = self.pos().x() - (newWidth - self.size().width()) / 2
+      moveY = self.pos().y() - (newHeight - self.size().height()) / 2
+      print moveX, moveY
+      print newWidth, newHeight
+      print self.size().width(), self.size().height()
+      self.setSize(newWidth, newHeight)
+      self.move(moveX, moveY)
 
 

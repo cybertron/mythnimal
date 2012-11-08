@@ -8,6 +8,8 @@ class MenuWidget(QScrollArea):
    def __init__(self, parent = None):
       QWidget.__init__(self, parent)
       
+      self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+      
       self.reset()
       
       
@@ -36,7 +38,12 @@ class MenuWidget(QScrollArea):
    def __getitem__(self, index):
       return self.items[index]
       
-
+      
+   def resizeEvent(self, event):
+      for i in self.items:
+         i.setMaximumWidth(event.size().width())
+      
+      
    def keyPressEvent(self, event):
       key = event.key()
       changed = False
