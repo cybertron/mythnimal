@@ -242,6 +242,7 @@ class MessageOverlay(Overlay):
       self.layout = QVBoxLayout(self)
       self.message = QLabel()
       self.message.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+      self.message.setAttribute(Qt.WA_TranslucentBackground)
       self.layout.addWidget(self.message)
       
       
