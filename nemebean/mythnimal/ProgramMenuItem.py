@@ -18,13 +18,16 @@ class ProgramMenuItem(MenuItem):
       self.layout.addWidget(self.programLabel)
       
       self.baseStyle = self.programLabel.styleSheet()
-      self.selectedStyle = 'QLabel { background-color: blue; }'
+      self.focusedSelectedStyle = 'QLabel { font-weight: bold; text-decoration: underline; }'
       
       self.setMinimumHeight(25)
       
       
-   def select(self):
-      self.programLabel.setStyleSheet(self.selectedStyle)
+   def select(self, focus):
+      if not focus:
+         self.programLabel.setStyleSheet(self.baseStyle)
+      else:
+         self.programLabel.setStyleSheet(self.focusedSelectedStyle)
       
    def deselect(self):
       self.programLabel.setStyleSheet(self.baseStyle)

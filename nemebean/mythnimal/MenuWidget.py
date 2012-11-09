@@ -82,7 +82,7 @@ class MenuWidget(QScrollArea):
          
       if self.selectedIndex is not None:
          selectedItem = self.selectedItem()
-         selectedItem.select()
+         selectedItem.select(self.hasFocus())
          self.ensureWidgetVisible(selectedItem)
          
          

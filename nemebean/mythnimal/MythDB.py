@@ -37,6 +37,16 @@ class MythDB:
       return (startret, endret)
       
       
+   def programInUse(self, program):
+      inUse = self.session.query(InUseProgram).filter(InUseProgram.chanid == program.chanid) \
+                                              .filter(InUseProgram.starttime == program.starttime) \
+                                              .all()
+      for i in inUse:
+         if i.recusage == 'recorder':
+            return True
+      return False
+      
+      
    def bookmark(self, filename):
       program = self.getProgram(filename)
       bookmark = self.getMarkup(program, 2)
@@ -148,4 +158,11 @@ class Channel(Base):
       self.channum = 'NA'
       self.callsign = 'NA'
       self.name = 'NA'
+      
+      
+class InUseProgram(Base):
+   __tablename__ = 'inuseprograms'
+   chanid = Column(Integer, primary_key=True)
+   starttime = Column(DateTime, primary_key=True)
+   recusage = Column(String, primary_key=True)
    

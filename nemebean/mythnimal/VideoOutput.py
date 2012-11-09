@@ -38,7 +38,7 @@ class VideoOutput(QWidget):
       self.videoLabel.aspectResize(self.width(), self.height())
       
    def nextZoom(self):
-      newVal = (self.videoLabel.zoom + 1) % 3
+      newVal = (self.videoLabel.zoom + 1) % 4
       self.setZoom(newVal)
       return newVal
          
@@ -77,15 +77,14 @@ class VideoOutputLabel(QLabel):
          self.applyZoom(1.1)
       if self.zoom == 2:
          self.applyZoom(1.2)
+      if self.zoom == 3:
+         self.applyZoom(1.25)
          
    def applyZoom(self, amount):
       newWidth = int(self.size().width() * amount)
       newHeight = int(self.size().height() * amount)
       moveX = self.pos().x() - (newWidth - self.size().width()) / 2
       moveY = self.pos().y() - (newHeight - self.size().height()) / 2
-      print moveX, moveY
-      print newWidth, newHeight
-      print self.size().width(), self.size().height()
       self.setSize(newWidth, newHeight)
       self.move(moveX, moveY)
 

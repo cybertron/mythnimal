@@ -12,9 +12,16 @@ class Player(QObject):
       self.filename = filename
       self.mythDB = mythDB
       self.ended = False
+      self.lastPosition = 0
       
       self.getSkipList()
       self.bookmark = self.mythDB.bookmark(self.filename)
+      self.program = self.mythDB.getProgram(self.filename)
+      self.recording = self.mythDB.programInUse(self.program)
+      if self.recording:
+         self.inUseTimer = QTimer()
+         self.inUseTimer.setInterval(5000)
+         self.inUseTimer.timeout.connect(self.checkRecording)
       
       self.videoOutput = VideoOutput(None, self.keyPressHandler)
       self.createOverlays()
@@ -22,20 +29,27 @@ class Player(QObject):
       self.videoOutput.move(x, y)
       self.videoOutput.showFullScreen()
       
+      self.startMPlayer()
+      
+   def startMPlayer(self, restarting = False):
       from MainForm import MainForm
+      self.fullPath = os.path.join(MainForm.settings['mythFileDir'], self.filename)
       self.mplayer = MPlayer(self.videoOutput.videoLabel,
-                             os.path.join(MainForm.settings['mythFileDir'], self.filename),
-                             self.buildMPlayerOptions())
+                             self.fullPath,
+                             self.buildMPlayerOptions(restarting))
       self.mplayer.foundAspect.connect(self.setAspect)
       self.mplayer.foundPosition.connect(self.updatePosition)
       self.mplayer.fileFinished.connect(self.end)
       self.mplayer.playbackStarted.connect(self.playbackStarted)
       
       
-   def buildMPlayerOptions(self):
+   def buildMPlayerOptions(self, restarting):
       opts = '-osdlevel 0 -cache 25000 -cache-min 1 '
       opts += '-vf yadif '
       opts += '-framedrop ' # yadif can have problems keeping up on HD content
+      if restarting:
+         opts += '-ss ' + str(self.lastPosition - 5)
+         print opts
       return opts
       
       
@@ -63,8 +77,10 @@ class Player(QObject):
             self.showMessage('Zoom: Off')
          elif zoom == 1:
             self.showMessage('Zoom: 10%')
-         else:
+         elif zoom == 2:
             self.showMessage('Zoom: 20%')
+         else:
+            self.showMessage('Zoom: 25%')
       elif key == Qt.Key_I:
          self.seekOverlay.showTimed()
       else:
@@ -80,6 +96,11 @@ class Player(QObject):
    def end(self, eof = True):
       #  This gets called twice in some cases, but we only want to do it once
       if not self.ended:
+         if eof and self.recording:
+            print 'Restarting'
+            self.startMPlayer(True)
+            return
+            
          self.mplayer.end()
          self.videoOutput.hide()
          self.seekOverlay.hide()
@@ -120,6 +141,8 @@ class Player(QObject):
          
    def updatePosition(self):
       self.seekOverlay.setTime(self.mplayer.position, self.mplayer.length)
+      if self.mplayer.position > self.lastPosition:
+         self.lastPosition = self.mplayer.position
       
       if self.nextSkip < len(self.starts):
          start = float(self.starts[self.nextSkip]) / self.mplayer.fps
@@ -154,6 +177,12 @@ class Player(QObject):
    def showMessage(self, message):
       self.messageOverlay.setMessage(message)
       self.messageOverlay.showTimed()
+      
+      
+   def checkRecording(self):
+      self.recording = self.mythDB.programInUse(self.program)
+      if not self.recording:
+         self.inUseTimer.stop() # No need to continue checking once it has stopped
          
       
       
