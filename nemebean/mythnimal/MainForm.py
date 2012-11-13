@@ -41,6 +41,7 @@ class MainForm(QDialog):
       self.mainMenu = MenuWidget()
       self.mainMenu.selected.connect(self.mainMenuSelected)
       self.mainMenu.exit.connect(self.close)
+      self.mainMenu.add(SimpleMenuItem('Live TV'))
       self.mainMenu.add(SimpleMenuItem('Watch Recordings'))
       self.mainMenu.add(SimpleMenuItem('Settings'))
       self.mainMenuLayout.addWidget(self.mainMenu)
@@ -177,8 +178,10 @@ class MainForm(QDialog):
       
    def mainMenuSelected(self, index):
       if index == 0:
-         self.tabs.setCurrentWidget(self.recordingsTab)
+         self.startLiveTV()
       elif index == 1:
+         self.tabs.setCurrentWidget(self.recordingsTab)
+      elif index == 2:
          self.showSettingsTab()
       else:
          print 'Unimplemented main menu item selected'
@@ -215,6 +218,19 @@ class MainForm(QDialog):
       self.initConfig.exec_()
       self.settingsTab.setLayout(self.settingsLayout)
       self.settings['firstRun'] = False
+      
+      
+   def startLiveTV(self):
+      filename = self.mythControl.startLiveTV()
+      if filename is not None:
+         print filename
+         self.player = Player(self.x(), self.y(), filename, self.mythDB)
+         self.player.finished.connect(self.stopLiveTV)
+         
+         
+   def stopLiveTV(self):
+      print 'stopping'
+      self.mythControl.stopLiveTV()
       
       
       

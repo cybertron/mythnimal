@@ -1,4 +1,4 @@
-from PyQt4.QtCore import QObject, Qt, QTimer
+from PyQt4.QtCore import QObject, Qt, QTimer, pyqtSignal
 from PyQt4.QtGui import QDialog, QHBoxLayout, QLabel, QProgressBar, QX11Info
 from VideoOutput import VideoOutput
 from MPlayer import MPlayer
@@ -6,6 +6,7 @@ from MythDB import Markup
 import os
 
 class Player(QObject):
+   finished = pyqtSignal()
    def __init__(self, x, y, filename, mythDB):
       QObject.__init__(self)
       
@@ -107,6 +108,7 @@ class Player(QObject):
          self.messageOverlay.hide()
          self.mythDB.saveBookmark(self.mplayer, eof)
          self.ended = True
+         self.finished.emit()
       
       
       

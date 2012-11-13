@@ -105,6 +105,8 @@ class MPlayer(QObject):
          if line.startswith('ANS_time_pos'):
             parts = line.split('=')
             self.position = float(parts[1]) - self.startTime
+            if self.position > self.length:
+               self.length = self.position
             self.foundPosition.emit()
             continue
          
