@@ -95,3 +95,7 @@ class MenuWidget(QScrollArea):
    def focus(self):
       self.setFocus()
       self.updateSelected()
+      
+      
+   def focusInEvent(self, event):
+      self.updateSelected()

@@ -4,16 +4,18 @@ import os
 
 class MythDB:
    # Schema versions above this have not been verified to work
-   supportedSchema = 1264
+   supportedSchemas = [1264]
    def __init__(self, host, user, password):
       self.engine = create_engine('mysql://' + user + ':' + password + '@' + host + '/mythconverg')
+      
+      
       Session = sessionmaker(bind=self.engine)
       self.session = Session()
       
       self.writes = False
       schemaVersion = int(self.session.query(Settings).filter(Settings.value == 'DBSchemaVer').first().data)
       # If not a supported schema, don't write to DB to avoid possible corruption
-      if schemaVersion <= self.supportedSchema:
+      if schemaVersion <= self.supportedSchemas[-1]:
          self.writes = True
       
    
@@ -97,6 +99,10 @@ class MythDB:
       if channel is not None:
          return channel
       return Channel()
+      
+      
+   def getSetting(self, name):
+      return self.session.query(Settings).filter(Settings.value == name).first().data
 
       
 from sqlalchemy.ext.declarative import declarative_base

@@ -2,7 +2,7 @@ from MenuItem import MenuItem
 from PyQt4.QtGui import QLabel, QPalette, QColor, QHBoxLayout
 from PyQt4.QtCore import Qt
 
-class ShowMenuItem(MenuItem):
+class SimpleMenuItem(MenuItem):
    def __init__(self, title):
       MenuItem.__init__(self)
       

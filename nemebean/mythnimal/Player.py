@@ -141,8 +141,8 @@ class Player(QObject):
          
    def updatePosition(self):
       self.seekOverlay.setTime(self.mplayer.position, self.mplayer.length)
-      if self.mplayer.position > self.lastPosition:
-         self.lastPosition = self.mplayer.position
+      if self.mplayer.length > self.lastPosition:
+         self.lastPosition = self.mplayer.length
       
       if self.nextSkip < len(self.starts):
          start = float(self.starts[self.nextSkip]) / self.mplayer.fps
