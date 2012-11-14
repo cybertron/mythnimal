@@ -12,6 +12,7 @@ class MythControl:
       self.mythDB = mythDB
       self.connected = False
       self.liveTVRecorder = None
+      self.currentChannel = None
       
       self.backendIP = self.mythDB.getSetting('MasterServerIP')
       self.backendPort = int(self.mythDB.getSetting('MasterServerPort'))
@@ -31,15 +32,27 @@ class MythControl:
    def sendCommand(self, command, response = True):
       length = len(command)
       length = str(length).ljust(8)
-      commandStr = length + command
+      commandStr = str(length + command)
       print 'Sending:', commandStr
       self.socket.sendall(commandStr)
       if response:
-         length = self.socket.recv(8)
-         data = self.socket.recv(int(length))
+         length = self.recv(8)
+         data = self.recv(int(length))
          print data
          return data
       return None
+      
+      
+   def recv(self, length):
+      done = False
+      while not done:
+         try:
+            data = self.socket.recv(length)
+            done = True
+         except socket.error as (errno, msg):
+            if errno != 4:
+               raise
+      return data
       
       
    def negotiateVersion(self):
@@ -66,15 +79,31 @@ class MythControl:
          return None
          
       # TODO Check that recorder is not slave backend - that is not supported
+      
+      self.currentChannel = self.mythDB.getCardInput(self.liveTVRecorder).startchan
          
       args = '[]:[]SPAWN_LIVETV[]:[]live-' + socket.gethostname() + '-' + datetime.datetime.today().isoformat()
-      args += '[]:[]0[]:[]3'
+      args += '[]:[]0[]:[]' + self.currentChannel
       response = self.sendCommand(self.query() + args)
       if not response.startswith('ok'):
          print 'Failed to start live tv'
          self.stopLiveTV()
          return None
+      
+      return self.getCurrentRecording()
          
+         
+   def changeChannel(self, channel):
+      # TODO Need to check this at some point
+      response = self.sendCommand(self.query() + '[]:[]SHOULD_SWITCH_CARD[]:[]3032')
+      response = self.sendCommand(self.query() + '[]:[]PAUSE')
+      response = self.sendCommand(self.query() + '[]:[]CHECK_CHANNEL[]:[]' + channel)
+      response = self.sendCommand(self.query() + '[]:[]SET_CHANNEL[]:[]' + channel)
+      self.currentChannel = channel
+      return self.getCurrentRecording()
+         
+         
+   def getCurrentRecording(self):
       if self.waitForRecording():
          # For some reason Myth returns a wrong filename if we do the next step immediately
          # Fortunately, we should wait a few seconds to let it get ahead anyway
@@ -110,7 +139,10 @@ class MythControl:
       response = self.sendCommand(self.query() + '[]:[]FINISH_RECORDING')
       if not response.startswith('ok'):
          print 'Failed to stop recorder'
+         
+      self.liveTVRecorder = None
       
       
    def query(self):
       return 'QUERY_RECORDER ' + self.liveTVRecorder
+      

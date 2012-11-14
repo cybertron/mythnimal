@@ -103,6 +103,10 @@ class MythDB:
       
    def getSetting(self, name):
       return self.session.query(Settings).filter(Settings.value == name).first().data
+      
+      
+   def getCardInput(self, id):
+      return self.session.query(CardInput).filter(CardInput.cardid == id).first()
 
       
 from sqlalchemy.ext.declarative import declarative_base
@@ -171,4 +175,12 @@ class InUseProgram(Base):
    chanid = Column(Integer, primary_key=True)
    starttime = Column(DateTime, primary_key=True)
    recusage = Column(String, primary_key=True)
+   
+   
+class CardInput(Base):
+   __tablename__ = 'cardinput'
+   cardid = Column(Integer, primary_key=True)
+   sourceid = Column(Integer)
+   startchan = Column(String)
+   displayname = Column(String)
    

@@ -173,7 +173,7 @@ class MainForm(QDialog):
       
    # Index is ignored
    def programSelected(self, index):
-      self.player = Player(self.x(), self.y(), self.programMenu.selectedItem().id, self.mythDB)
+      self.startPlayer(self.programMenu.selectedItem().id, live = False)
       
       
    def mainMenuSelected(self, index):
@@ -222,15 +222,20 @@ class MainForm(QDialog):
       
    def startLiveTV(self):
       filename = self.mythControl.startLiveTV()
+      self.startPlayer(filename, live = True)
+      
+         
+   def changeChannel(self, channel):
+      filename = self.mythControl.changeChannel(channel)
+      self.startPlayer(filename, live = True)
+      
+      
+   def startPlayer(self, filename, live = False):
       if filename is not None:
-         print filename
          self.player = Player(self.x(), self.y(), filename, self.mythDB)
-         self.player.finished.connect(self.stopLiveTV)
-         
-         
-   def stopLiveTV(self):
-      print 'stopping'
-      self.mythControl.stopLiveTV()
-      
-      
+         if live:
+            self.player.finished.connect(self.mythControl.stopLiveTV)
+            self.player.channelChange.connect(self.changeChannel)
+            self.player.currentChannel = self.mythControl.currentChannel
+            
       

@@ -7,6 +7,7 @@ import os
 
 class Player(QObject):
    finished = pyqtSignal()
+   channelChange = pyqtSignal(str)
    def __init__(self, x, y, filename, mythDB):
       QObject.__init__(self)
       
@@ -14,6 +15,8 @@ class Player(QObject):
       self.mythDB = mythDB
       self.ended = False
       self.lastPosition = 0
+      self.emitFinished = True
+      self.currentChannel = None
       
       self.getSkipList()
       self.bookmark = self.mythDB.bookmark(self.filename)
@@ -84,6 +87,17 @@ class Player(QObject):
             self.showMessage('Zoom: 25%')
       elif key == Qt.Key_I:
          self.seekOverlay.showTimed()
+         if self.currentChannel is not None:
+            self.channelOverlay.message.setText(self.currentChannel)
+            self.channelOverlay.showTimed()
+      # Making some assumptions about how Qt lays out its key structure, but that seems unlikely to change
+      elif key >= Qt.Key_0 and key <= Qt.Key_9:
+         self.channelOverlay.numberPressed(key - Qt.Key_0)
+         self.channelOverlay.showTimed(3000)
+      elif key == Qt.Key_Enter or key == Qt.Key_Return:
+         self.channelChange.emit(self.channelOverlay.message.text())
+         self.emitFinished = False
+         self.end(False)
       else:
          return False
       return True
@@ -106,9 +120,11 @@ class Player(QObject):
          self.videoOutput.hide()
          self.seekOverlay.hide()
          self.messageOverlay.hide()
+         self.channelOverlay.hide()
          self.mythDB.saveBookmark(self.mplayer, eof)
          self.ended = True
-         self.finished.emit()
+         if self.emitFinished:
+            self.finished.emit()
       
       
       
@@ -159,6 +175,7 @@ class Player(QObject):
    def createOverlays(self):
       self.seekOverlay = SeekOverlay(self.keyPressHandler, self.videoOutput)
       self.messageOverlay = MessageOverlay(self.keyPressHandler, self.videoOutput)
+      self.channelOverlay = ChannelOverlay(self.keyPressHandler, self.videoOutput)
       
    def placeOverlays(self):
       vidWidth = self.videoOutput.size().width()
@@ -173,7 +190,11 @@ class Player(QObject):
       
       self.messageOverlay.resize(vidWidth / 2, vidHeight / 8)
       x = vidWidth / 2 + self.videoOutput.pos().x() - self.messageOverlay.size().width() / 2
-      self.messageOverlay.move(x, self.videoOutput.pos().y()) 
+      self.messageOverlay.move(x, self.videoOutput.pos().y() + seekMargin)
+      
+      self.channelOverlay.resize(vidWidth / 10, vidHeight / 10)
+      x = self.videoOutput.pos().x() + vidWidth - self.channelOverlay.size().width() - seekMargin
+      self.channelOverlay.move(x, self.videoOutput.pos().y() + seekMargin)
       
       
    def showMessage(self, message):
@@ -212,7 +233,7 @@ class Overlay(QDialog):
       
    def keyPressEvent(self, event):
       if not self.keyPressHandler(event):
-         Overlay.keyPressEvent(self, event)
+         QDialog.keyPressEvent(self, event)
       
       
 class SeekOverlay(Overlay):
@@ -250,4 +271,17 @@ class MessageOverlay(Overlay):
       
    def setMessage(self, message):
       self.message.setText(message)
+      
+      
+class ChannelOverlay(MessageOverlay):
+   def __init__(self, keyPressHandler, parent = None):
+      MessageOverlay.__init__(self, keyPressHandler, parent)
+      
+      
+   def numberPressed(self, number):
+      self.message.setText(self.message.text() + str(number))
+      
+      
+   def hideEvent(self, event):
+      self.message.setText('')
       
