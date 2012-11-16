@@ -2,7 +2,7 @@ from PyQt4.QtCore import QObject, Qt, QTimer, pyqtSignal
 from PyQt4.QtGui import QDialog, QHBoxLayout, QLabel, QProgressBar, QX11Info
 from VideoOutput import VideoOutput
 from MPlayer import MPlayer
-from MythDB import Markup
+from MythDBObjects import Markup
 import os
 
 class Player(QObject):

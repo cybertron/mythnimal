@@ -1,10 +1,10 @@
 from PyQt4.QtGui import *
 from Settings import Settings
 from Player import Player
-from MythDB import MythDB, Program
+from MythDB import MythDB
+from MythDBObjects import Program
 from MenuWidget import MenuWidget
-from SimpleMenuItem import SimpleMenuItem
-from ProgramMenuItem import ProgramMenuItem
+from MenuItem import SimpleMenuItem, ProgramMenuItem
 from TabWidget import TabWidget
 from PairWidget import PairWidget
 from MythControl import MythControl
