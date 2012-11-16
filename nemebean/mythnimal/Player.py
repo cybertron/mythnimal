@@ -3,6 +3,7 @@ from PyQt4.QtGui import QDialog, QHBoxLayout, QLabel, QProgressBar, QX11Info
 from VideoOutput import VideoOutput
 from MPlayer import MPlayer
 from MythDBObjects import Markup
+from Overlays import *
 import os
 
 class Player(QObject):
@@ -52,7 +53,7 @@ class Player(QObject):
       opts += '-vf yadif '
       opts += '-framedrop ' # yadif can have problems keeping up on HD content
       if restarting:
-         opts += '-ss ' + str(self.lastPosition - 5)
+         opts += '-ss ' + str(self.lastPosition)
          print opts
       return opts
       
@@ -208,80 +209,4 @@ class Player(QObject):
          self.inUseTimer.stop() # No need to continue checking once it has stopped
          
       
-      
-from PyQt4.QtGui import QVBoxLayout
-class Overlay(QDialog):
-   def __init__(self, keyPressHandler, parent = None):
-      QDialog.__init__(self, parent)
-      
-      self.keyPressHandler = keyPressHandler
-      
-      self.setWindowFlags(Qt.Dialog | Qt.FramelessWindowHint)
-      # Causes issues in some non-compositing WM's (notably Fluxbox)
-      if QX11Info.isCompositingManagerRunning():
-         self.setAttribute(Qt.WA_TranslucentBackground)
-         
-      self.timer = QTimer()
-      self.timer.setSingleShot(True)
-      self.timer.timeout.connect(self.hide)
-      
-      
-   def showTimed(self, interval = 2000):
-      self.show()
-      self.raise_()
-      self.timer.start(interval)
-      
-   def keyPressEvent(self, event):
-      if not self.keyPressHandler(event):
-         QDialog.keyPressEvent(self, event)
-      
-      
-class SeekOverlay(Overlay):
-   def __init__(self, keyPressHandler, parent = None):
-      Overlay.__init__(self, keyPressHandler, parent)
-      
-      self.setupUI()
-      
-      
-   def setupUI(self):
-      self.layout = QHBoxLayout(self)
-      
-      self.timeBar = QProgressBar()
-      self.layout.addWidget(self.timeBar)
-      
-      
-   def setTime(self, current, total):
-      current = int(current)
-      total = int(total)
-      self.timeBar.setMaximum(total)
-      self.timeBar.setValue(current)
-      self.timeBar.setFormat(MPlayer.formatTime(current) + '/' + MPlayer.formatTime(total))
-      
-      
-class MessageOverlay(Overlay):
-   def __init__(self, keyPressHandler, parent = None):
-      Overlay.__init__(self, keyPressHandler, parent)
-      
-      self.layout = QVBoxLayout(self)
-      self.message = QLabel()
-      self.message.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
-      self.message.setAttribute(Qt.WA_TranslucentBackground)
-      self.layout.addWidget(self.message)
-      
-      
-   def setMessage(self, message):
-      self.message.setText(message)
-      
-      
-class ChannelOverlay(MessageOverlay):
-   def __init__(self, keyPressHandler, parent = None):
-      MessageOverlay.__init__(self, keyPressHandler, parent)
-      
-      
-   def numberPressed(self, number):
-      self.message.setText(self.message.text() + str(number))
-      
-      
-   def hideEvent(self, event):
-      self.message.setText('')
       
