@@ -39,6 +39,7 @@ class SeekOverlay(Overlay):
       self.layout = QHBoxLayout(self)
       
       self.timeBar = QProgressBar()
+      self.timeBar.setStyleSheet('QProgressBar {font-size: 25pt;}')
       self.layout.addWidget(self.timeBar)
       
       
@@ -58,6 +59,7 @@ class MessageOverlay(Overlay):
       self.message = QLabel()
       self.message.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
       self.message.setAttribute(Qt.WA_TranslucentBackground)
+      self.message.setStyleSheet('QLabel {font-size: 30pt;}')
       self.layout.addWidget(self.message)
       
       
@@ -68,6 +70,7 @@ class MessageOverlay(Overlay):
 class ChannelOverlay(MessageOverlay):
    def __init__(self, keyPressHandler, parent = None):
       MessageOverlay.__init__(self, keyPressHandler, parent)
+      self.message.setStyleSheet('QLabel {font-size: 50pt;}')
       
       
    def numberPressed(self, number):

@@ -39,6 +39,19 @@ class MenuWidget(QScrollArea):
       return self.items[index]
       
       
+   def remove(self, item):
+      self.layout.removeWidget(item)
+      print len(self.items)
+      self.items = [i for i in self.items if i is not item]
+      print len(self.items)
+      if len(self.items) == 0:
+         self.selectedIndex = None
+      else:
+         self.selectedIndex = 0
+         self.updateSelected()
+      item.setParent(None) # Should remove the last reference and trigger deletion
+      
+      
    def resizeEvent(self, event):
       for i in self.items:
          i.setMaximumWidth(event.size().width())
@@ -49,6 +62,7 @@ class MenuWidget(QScrollArea):
       changed = False
       if key == Qt.Key_Enter or key == Qt.Key_Return or key == Qt.Key_Right:
          self.selected.emit(self.selectedIndex)
+         self.items[self.selectedIndex].selected.emit()
       if key == Qt.Key_Escape or key == Qt.Key_Left:
          self.exit.emit()
       elif key == Qt.Key_Down:

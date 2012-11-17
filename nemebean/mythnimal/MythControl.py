@@ -13,6 +13,7 @@ class MythControl:
       self.connected = False
       self.liveTVRecorder = None
       self.currentChannel = None
+      self.verbose = True
       
       self.backendIP = self.mythDB.getSetting('MasterServerIP')
       self.backendPort = int(self.mythDB.getSetting('MasterServerPort'))
@@ -33,12 +34,14 @@ class MythControl:
       length = len(command)
       length = str(length).ljust(8)
       commandStr = str(length + command)
-      print 'Sending:', commandStr
+      if self.verbose:
+         print 'Sending:', commandStr
       self.socket.sendall(commandStr)
       if response:
          length = self.recv(8)
          data = self.recv(int(length))
-         print data
+         if self.verbose:
+            print data
          return data
       return None
       
@@ -70,7 +73,7 @@ class MythControl:
          self.connected = False
          
          
-   def startLiveTV(self):
+   def startLiveTV(self, callback = None):
       response = self.sendCommand('GET_NEXT_FREE_RECORDER[]:[]-1')
       parts = response.split('[]:[]')
       self.liveTVRecorder = parts[0]
@@ -90,24 +93,28 @@ class MythControl:
          self.stopLiveTV()
          return None
       
-      return self.getCurrentRecording()
+      return self.getCurrentRecording(callback)
          
          
-   def changeChannel(self, channel):
+   def changeChannel(self, channel, callback = None):
       # TODO Need to check this at some point
       response = self.sendCommand(self.query() + '[]:[]SHOULD_SWITCH_CARD[]:[]3032')
       response = self.sendCommand(self.query() + '[]:[]PAUSE')
       response = self.sendCommand(self.query() + '[]:[]CHECK_CHANNEL[]:[]' + channel)
       response = self.sendCommand(self.query() + '[]:[]SET_CHANNEL[]:[]' + channel)
       self.currentChannel = channel
-      return self.getCurrentRecording()
+      return self.getCurrentRecording(callback)
          
          
-   def getCurrentRecording(self):
+   def getCurrentRecording(self, callback = None):
       if self.waitForRecording():
          # For some reason Myth returns a wrong filename if we do the next step immediately
          # Fortunately, we should wait a few seconds to let it get ahead anyway
-         time.sleep(5)
+         start = time.time()
+         while time.time() - start < 5:
+            time.sleep(.1)
+            if callback is not None:
+               callback()
          response = self.sendCommand(self.query() + '[]:[]GET_CURRENT_RECORDING')
          parts = response.split('[]:[]')
          return os.path.basename(parts[8])
@@ -145,4 +152,15 @@ class MythControl:
       
    def query(self):
       return 'QUERY_RECORDER ' + self.liveTVRecorder
+      
+      
+   def deleteProgram(self, program, forget):
+      """I think this is the proper syntax for this command, but I'm not 100% sure.  Myth isn't
+      complaining about it when I send it, but my testing suggests that it forces deletion
+      whether I include the FORCE option or not, and the FORGET is difficult to test."""
+      ts = program.starttime.strftime('%Y%m%d%H%M%S')
+      command = 'DELETE_RECORDING ' + str(program.chanid) + ' ' + ts + ' FORCE'
+      if forget:
+         command += ' FORGET'
+      self.sendCommand(command)
       

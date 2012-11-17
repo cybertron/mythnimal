@@ -53,7 +53,7 @@ class Player(QObject):
       opts += '-vf yadif '
       opts += '-framedrop ' # yadif can have problems keeping up on HD content
       if restarting:
-         opts += '-ss ' + str(self.lastPosition)
+         opts += '-ss ' + str(self.lastPosition - 3)
          print opts
       return opts
       
@@ -96,9 +96,10 @@ class Player(QObject):
          self.channelOverlay.numberPressed(key - Qt.Key_0)
          self.channelOverlay.showTimed(3000)
       elif key == Qt.Key_Enter or key == Qt.Key_Return:
-         self.channelChange.emit(self.channelOverlay.message.text())
+         channel = self.channelOverlay.message.text()
          self.emitFinished = False
          self.end(False)
+         self.channelChange.emit(channel)
       else:
          return False
       return True
@@ -175,6 +176,7 @@ class Player(QObject):
          
    def createOverlays(self):
       self.seekOverlay = SeekOverlay(self.keyPressHandler, self.videoOutput)
+      self.seekOverlay.showTimed()
       self.messageOverlay = MessageOverlay(self.keyPressHandler, self.videoOutput)
       self.channelOverlay = ChannelOverlay(self.keyPressHandler, self.videoOutput)
       

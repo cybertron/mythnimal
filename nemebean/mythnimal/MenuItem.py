@@ -1,8 +1,9 @@
 from PyQt4.QtGui import QWidget, QLabel, QPalette, QColor, QHBoxLayout
-from PyQt4.QtCore import Qt
+from PyQt4.QtCore import Qt, pyqtSignal
 
 class MenuItem(QWidget):
    """Base class for items that can be inserted into a MenuWidget"""
+   selected = pyqtSignal()
    def __init__(self):
       QWidget.__init__(self)
       

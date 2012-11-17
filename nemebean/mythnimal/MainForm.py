@@ -1,4 +1,5 @@
 from PyQt4.QtGui import *
+from PyQt4.QtCore import Qt, pyqtSignal, QTimer
 from Settings import Settings
 from Player import Player
 from MythDB import MythDB
@@ -9,6 +10,7 @@ from TabWidget import TabWidget
 from PairWidget import PairWidget
 from MythControl import MythControl
 import os
+import time
 
 class MainForm(QDialog):
    settings = Settings()
@@ -48,6 +50,9 @@ class MainForm(QDialog):
       
       self.createRecordingsTab()
       self.createSettingsTab()
+      
+      self.messageDialog = MessageDialog(self)
+
       
    def createRecordingsTab(self):
       self.recordingsTab = self.tabs.createTab('Recordings')
@@ -161,6 +166,9 @@ class MainForm(QDialog):
       
    def displayProgramDetails(self):
       details = self.mythDB.getProgram(self.programMenu.selectedItem().id)
+      if details is None:
+         self.refreshProgramList()
+         return
       channel = self.mythDB.getChannel(details.chanid)
       filename = os.path.join(self.settings['mythFileDir'], details.basename)
       filename += '.png'
@@ -176,6 +184,7 @@ class MainForm(QDialog):
       self.startPlayer(self.programMenu.selectedItem().id, live = False)
       
       
+   # TODO Needs to be reimplemented using MenuItem signals
    def mainMenuSelected(self, index):
       if index == 0:
          self.startLiveTV()
@@ -221,12 +230,16 @@ class MainForm(QDialog):
       
       
    def startLiveTV(self):
-      filename = self.mythControl.startLiveTV()
+      self.messageDialog.showMessage('Buffering...')
+      filename = self.mythControl.startLiveTV(qApp.processEvents)
+      self.messageDialog.hide()
       self.startPlayer(filename, live = True)
       
          
    def changeChannel(self, channel):
-      filename = self.mythControl.changeChannel(channel)
+      self.messageDialog.showMessage('Buffering...')
+      filename = self.mythControl.changeChannel(channel, qApp.processEvents)
+      self.messageDialog.hide()
       self.startPlayer(filename, live = True)
       
       
@@ -238,4 +251,71 @@ class MainForm(QDialog):
             self.player.channelChange.connect(self.changeChannel)
             self.player.currentChannel = self.mythControl.currentChannel
             
+            
+   def keyPressEvent(self, event):
+      key = event.key()
+      if self.programMenu.hasFocus():
+         if key == Qt.Key_M:
+            self.showProgramMenu()
+         
+         
+   def showProgramMenu(self):
+      self.menuDialog = QDialog(self)
+      menuLayout = QVBoxLayout(self.menuDialog)
+      
+      selected = self.mythDB.getProgram(self.programMenu.selectedItem().id)
+      title = QLabel(selected.title)
+      menuLayout.addWidget(title)
+      subtitle = QLabel(selected.subtitle)
+      menuLayout.addWidget(subtitle)
+      
+      programOptions = MenuWidget(self)
+      programOptions.exit.connect(self.menuDialog.close)
+      menuLayout.addWidget(programOptions)
+      
+      item = SimpleMenuItem('Delete')
+      item.selected.connect(self.deleteSelected)
+      programOptions.add(item)
+      item = SimpleMenuItem('Delete and re-record')
+      item.selected.connect(self.deleteAndRerecord)
+      programOptions.add(item)
+      
+      self.menuDialog.exec_()
+      self.menuDialog = None # For some reason not doing this results in segfaults
+      
+   def deleteSelected(self):
+      self.deleteSelectedProgram(False)
+      self.menuDialog.close()
+   
+   def deleteAndRerecord(self):
+      self.deleteSelectedProgram(True)
+      self.menuDialog.close()
+      
+      
+   def deleteSelectedProgram(self, rerecord):
+      selected = self.programMenu.selectedItem()
+      selectedProgram = self.mythDB.getProgram(selected.id)
+      self.mythControl.deleteProgram(selectedProgram, rerecord)
+      self.programMenu.remove(selected)
+      
+      
+class MessageDialog(QDialog):
+   def __init__(self, parent = None):
+      QDialog.__init__(self, parent)
+      self.setWindowFlags(Qt.Dialog | Qt.FramelessWindowHint)
+      self.layout = QVBoxLayout(self)
+      self.label = QLabel()
+      self.label.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+      self.label.setStyleSheet('QLabel {font-size: 30pt;}')
+      self.layout.addWidget(self.label)
+      
+      
+   def showMessage(self, message):
+      self.label.setText(message)
+      self.show()
+      self.raise_()
+      
+   def showEvent(self, event):
+      qApp.processEvents()
+      
       
