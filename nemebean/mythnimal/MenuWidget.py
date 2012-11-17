@@ -59,9 +59,7 @@ class MenuWidget(QScrollArea):
       
    def remove(self, item):
       self.layout.removeWidget(item)
-      print len(self.items)
       self.items = [i for i in self.items if i is not item]
-      print len(self.items)
       if len(self.items) == 0:
          self.selectedIndex = None
       else:
