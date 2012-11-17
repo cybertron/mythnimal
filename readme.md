@@ -1,6 +1,7 @@
 ### Big Scary Disclaimer ###
 While Mythnimal mostly just reads from your Myth environment, it does make a few changes as well.  I am not responsible if it completely trashes your installation, nor for any other negative consequences of using this application.
 
+### (Mostly) Less Scary Stuff ###
 Now, with that out of the way I'll give a quick overview of Mythnimal.  It was born out of my frustration with the official Mythfrontend, in particular the lack of any sort of backward or forward compatibility.  At some point I realized that I only used a tiny fraction of the functionality of Mythfrontend, and that functionality would be fairly easy to implement in a new frontend.
 
 As of this writing, Mythnimal implements all of the major functionality that I use, with the notable exception of an internal program guide.  I intend for that to arrive at some point too, however.  Things it can do include watching previously recorded shows and watching live tv (though there are currently some important limitations with that).  At this point it only officially supports the protocol used in Myth .24, but because of its simple design it actually supports many more versions than that.  I just haven't tested any others yet.
