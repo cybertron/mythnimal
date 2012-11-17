@@ -10,3 +10,5 @@ If you're feeling adventurous and want to try using a frontend that is still und
 2. Keybindings are largely the same as regular Myth, except that space is pause.
 3. This frontend uses MPlayer to play recordings, so you will need that installed, along with Python, Qt4, PyQt4, and SQLAlchemy.
 4. Another reminder: This is in very early development right now, so the code is going to be in flux for a while.  What gets checked in to the Git repo _probably_ works for me, but no guarantees.
+
+Assuming all goes well with this project, at some point I will probably write something up on the GitHub wiki for it.  Until then, this is all the documentation you're getting. ;-)
