@@ -89,12 +89,17 @@ class ChannelOverlay(MessageOverlay):
    def __init__(self, keyPressHandler, parent = None):
       MessageOverlay.__init__(self, keyPressHandler, parent)
       self.message.setStyleSheet('QLabel {font-size: 50pt;}')
+      self.inputActive = False
       
       
    def numberPressed(self, number):
+      if not self.inputActive:
+         self.message.setText('')
+      self.inputActive = True
       self.message.setText(self.message.text() + str(number))
       
       
    def hideEvent(self, event):
       self.message.setText('')
+      self.inputActive = False
       

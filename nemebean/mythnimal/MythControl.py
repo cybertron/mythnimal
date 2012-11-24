@@ -103,25 +103,56 @@ class MythControl:
       
       self.currentChannel = self.mythDB.getCardInput(self.liveTVRecorder).startchan
          
-      args = '[]:[]SPAWN_LIVETV[]:[]live-' + socket.gethostname() + '-' + datetime.datetime.today().isoformat()
-      args += '[]:[]0[]:[]' + self.currentChannel
+      self.chain = 'live-' + socket.gethostname() + '-' + datetime.datetime.today().isoformat()
+      if self.spawnLiveTV(self.currentChannel, callback):
+         return self.getCurrentRecording(callback)
+      return None
+   
+   def spawnLiveTV(self, channel, callback):
+      args = '[]:[]SPAWN_LIVETV[]:[]' + self.chain
+      args += '[]:[]0[]:[]' + channel
       response = self.sendCommand(self.query() + args)
       if not response.startswith('ok'):
          print 'Failed to start live tv'
          self.stopLiveTV()
-         return None
+         return False
+      return True
       
-      return self.getCurrentRecording(callback)
-         
          
    def changeChannel(self, channel, callback = None):
       # TODO Need to check this at some point
-      response = self.sendCommand(self.query() + '[]:[]SHOULD_SWITCH_CARD[]:[]3032')
-      response = self.sendCommand(self.query() + '[]:[]PAUSE')
-      response = self.sendCommand(self.query() + '[]:[]CHECK_CHANNEL[]:[]' + channel)
-      response = self.sendCommand(self.query() + '[]:[]SET_CHANNEL[]:[]' + channel)
+      channelInfo = self.mythDB.getChannelByNum(channel)
+      response = self.sendCommand(self.query() + '[]:[]SHOULD_SWITCH_CARD[]:[]' + str(channelInfo.chanid))
+      if response == '1':
+         if not self.switchCard(channelInfo):
+            channel = self.currentChannel
+         else:
+            if not self.spawnLiveTV(channel, callback):
+               return None
+      else:
+         response = self.sendCommand(self.query() + '[]:[]PAUSE')
+         response = self.sendCommand(self.query() + '[]:[]SET_CHANNEL[]:[]' + channel)
       self.currentChannel = channel
       return self.getCurrentRecording(callback)
+      
+      
+   def switchCard(self, channelInfo):
+      cards = self.mythDB.getCardInputBySourceID(channelInfo.sourceid)
+         
+      freeCards = self.sendCommand('GET_FREE_RECORDER_LIST').split('[]:[]')
+      print freeCards
+      for i in cards:
+         if str(i.cardid) in freeCards:
+            response = self.sendCommand('QUERY_RECORDER ' + str(i.cardid) + '[]:[]IS_RECORDING')
+            if response.startswith('0'):
+               response = self.sendCommand('GET_RECORDER_FROM_NUM[]:[]' + str(i.cardid))
+               if not response.startswith('nohost'):
+                  self.stopLiveTV()
+                  self.liveTVRecorder = str(i.cardid)
+                  response = self.sendCommand(self.query() + '[]:[]CHECK_CHANNEL[]:[]' + channelInfo.channum)
+                  if response.startswith('1'):
+                     return True
+      return False # Tried all cards and didn't succeed
          
          
    def getCurrentRecording(self, callback = None):
@@ -144,7 +175,8 @@ class MythControl:
       response = ''
       start = datetime.datetime.today()
       while not response.startswith('1'):
-         if datetime.datetime.today() - start > datetime.timedelta(seconds = 30):
+         time.sleep(.5)
+         if datetime.datetime.today() - start > datetime.timedelta(seconds = 1):
             print 'Timed out waiting for recording to start'
             self.stopLiveTV()
             return False

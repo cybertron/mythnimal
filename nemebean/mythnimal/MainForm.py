@@ -188,7 +188,7 @@ class MainForm(QDialog):
          self.refreshProgramList()
          return
       channel = self.mythDB.getChannel(details.chanid)
-      filename = os.path.join(self.settings['mythFileDir'], details.basename)
+      filename = self.getFullPath(details.basename)
       filename += '.png'
       self.programThumbnail.setPixmap(QPixmap(filename))
       self.programChannel.setText(channel.channum + ' ' + channel.name)
@@ -257,18 +257,55 @@ class MainForm(QDialog):
    def changeChannel(self, channel):
       self.messageDialog.showMessage('Buffering...')
       filename = self.mythControl.changeChannel(channel, qApp.processEvents)
+      # This is highly unlikely, but possible
+      if filename is None:
+         self.messageDialog.showMessageTimed('Channel change failed')
       self.messageDialog.hide()
       self.startPlayer(filename, live = True)
       
       
-   def startPlayer(self, filename, live = False):
+   def startPlayer(self, filename, live = False, startAtEnd = False):
       if filename is not None:
-         self.player = Player(self.x(), self.y(), filename, self.mythDB)
+         self.player = Player(self.x(), self.y(), filename, self.mythDB, startAtEnd)
          if live:
-            self.player.finished.connect(self.mythControl.stopLiveTV)
+            self.player.finished.connect(self.playerStopped)
             self.player.channelChange.connect(self.changeChannel)
+            self.player.seekedPastStart.connect(self.playPreviousInChain)
             self.player.currentChannel = self.mythControl.currentChannel
             
+            
+   def playerStopped(self, eof):
+      if not eof:
+         self.mythControl.stopLiveTV()
+      else: # Go to the next live TV recording
+         nextChain = None
+         while nextChain == None:
+            i, chain, currentChain = self.getCurrentChain()
+            if i + 1 < len(chain):
+               nextChain = chain[i + 1]
+            else:
+               print 'Waiting for next program to start'
+         nextProgram = self.mythDB.getProgramByChain(nextChain)
+         self.player.emitFinished = False
+         self.player.end(eof = False)
+         self.startPlayer(nextProgram.basename, live = True)
+         
+         
+   def playPreviousInChain(self):
+      i, chain, currentChain = self.getCurrentChain()
+      if i > 0:
+         nextProgram = self.mythDB.getProgramByChain(chain[i - 1])
+         self.player.emitFinished = False
+         self.player.end(eof = False)
+         self.startPlayer(nextProgram.basename, live = True, startAtEnd = True)
+   
+   
+   def getCurrentChain(self):
+      currentProgram = self.mythDB.getProgram(self.player.filename)
+      chain = self.mythDB.getTVChain(self.mythControl.chain)
+      for i, entry in enumerate(chain):
+         if entry.chanid == currentProgram.chanid and entry.starttime == currentProgram.starttime:
+            return i, chain, entry
             
    def keyPressEvent(self, event):
       key = event.key()
@@ -317,6 +354,10 @@ class MainForm(QDialog):
       self.programMenu.remove(selected)
       
       
+   def getFullPath(self, basename):
+      return os.path.join(self.settings['mythFileDir'], basename)
+      
+      
 class MessageDialog(QDialog):
    def __init__(self, parent = None):
       QDialog.__init__(self, parent)
@@ -327,13 +368,19 @@ class MessageDialog(QDialog):
       self.label.setStyleSheet('QLabel {font-size: 30pt;}')
       self.layout.addWidget(self.label)
       
+      self.timer = QTimer()
+      self.timer.timeout.connect(self.hide)
+      self.timer.setSingleShot(True)
+      
       
    def showMessage(self, message):
       self.label.setText(message)
       self.show()
       self.raise_()
       
-   def showEvent(self, event):
-      qApp.processEvents()
+      
+   def showMessageTimed(self, message, timeout = 3000):
+      self.showMessage(message)
+      self.timer.start(timeout)
       
       

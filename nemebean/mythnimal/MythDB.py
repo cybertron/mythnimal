@@ -96,6 +96,8 @@ class MythDB:
       
       
    def commit(self):
+      """self.session.commit should never be used directly, so that writes to an unsupported
+      DB schema do not happen."""
       if self.writes:
          self.session.commit()
       else:
@@ -106,6 +108,11 @@ class MythDB:
    def getProgram(self, filename):
       return self.session.query(Program).filter(Program.basename.like(filename)).first()
       
+   def getProgramByChain(self, chain):
+      return self.session.query(Program).filter(Program.chanid == chain.chanid) \
+                                        .filter(Program.starttime == chain.starttime) \
+                                        .first()
+      
    def getMarkup(self, program, type):
       return self.session.query(Markup).filter(Markup.chanid == program.chanid) \
                                        .filter(Markup.starttime == program.starttime) \
@@ -114,10 +121,10 @@ class MythDB:
                                        .all()
    
    def getChannel(self, chanid):
-      channel = self.session.query(Channel).filter(Channel.chanid == chanid).first()
-      if channel is not None:
-         return channel
-      return Channel()
+      return self.session.query(Channel).filter(Channel.chanid == chanid).first()
+      
+   def getChannelByNum(self, num):
+      return self.session.query(Channel).filter(Channel.channum == num).first()
       
       
    def getSetting(self, name):
@@ -126,5 +133,14 @@ class MythDB:
       
    def getCardInput(self, id):
       return self.session.query(CardInput).filter(CardInput.cardid == id).first()
+      
+   def getCardInputBySourceID(self, id):
+      return self.session.query(CardInput).filter(CardInput.sourceid == id).all()
+      
+   def getTVChain(self, id):
+      return self.session.query(TVChain).filter(TVChain.chainid == id) \
+                                        .filter(TVChain.cardtype != 'DUMMY') \
+                                        .order_by(TVChain.chainpos) \
+                                        .all()
 
       

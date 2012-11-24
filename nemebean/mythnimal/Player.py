@@ -25,9 +25,10 @@ from Overlays import *
 import os
 
 class Player(QObject):
-   finished = pyqtSignal()
+   finished = pyqtSignal(bool)
    channelChange = pyqtSignal(str)
-   def __init__(self, x, y, filename, mythDB):
+   seekedPastStart = pyqtSignal()
+   def __init__(self, x, y, filename, mythDB, startAtEnd = False):
       QObject.__init__(self)
       
       self.filename = filename
@@ -36,15 +37,12 @@ class Player(QObject):
       self.lastPosition = 0
       self.emitFinished = True
       self.currentChannel = None
+      self.startAtEnd = startAtEnd
       
       self.getSkipList()
       self.bookmark = self.mythDB.bookmark(self.filename)
       self.program = self.mythDB.getProgram(self.filename)
       self.recording = self.mythDB.programInUse(self.program)
-      if self.recording:
-         self.inUseTimer = QTimer()
-         self.inUseTimer.setInterval(5000)
-         self.inUseTimer.timeout.connect(self.checkRecording)
       
       self.videoOutput = VideoOutput(None, self.keyPressHandler)
       self.createOverlays()
@@ -55,24 +53,25 @@ class Player(QObject):
       self.startMPlayer()
       
    def startMPlayer(self, restarting = False):
+      if restarting:
+         self.startAtEnd = True
       from MainForm import MainForm
-      self.fullPath = os.path.join(MainForm.settings['mythFileDir'], self.filename)
+      self.settings = MainForm.settings
+      self.fullPath = os.path.join(self.settings['mythFileDir'], self.filename)
       self.mplayer = MPlayer(self.videoOutput.videoLabel,
                              self.fullPath,
-                             self.buildMPlayerOptions(restarting))
+                             self.buildMPlayerOptions())
       self.mplayer.foundAspect.connect(self.setAspect)
       self.mplayer.foundPosition.connect(self.updatePosition)
       self.mplayer.fileFinished.connect(self.end)
       self.mplayer.playbackStarted.connect(self.playbackStarted)
       
       
-   def buildMPlayerOptions(self, restarting):
+   def buildMPlayerOptions(self):
       opts = '-osdlevel 0 -cache 25000 -cache-min 1 '
-      opts += '-vf yadif '
+      if self.settings['deinterlace']:
+         opts += '-vf yadif '
       opts += '-framedrop ' # yadif can have problems keeping up on HD content
-      if restarting:
-         opts += '-ss ' + str(self.lastPosition - 3)
-         print opts
       return opts
       
       
@@ -113,17 +112,25 @@ class Player(QObject):
       elif key >= Qt.Key_0 and key <= Qt.Key_9:
          self.channelOverlay.numberPressed(key - Qt.Key_0)
          self.channelOverlay.showTimed(3000)
+      elif key == Qt.Key_Underscore:
+         self.channelOverlay.numberPressed(event.text())
       elif key == Qt.Key_Enter or key == Qt.Key_Return:
          channel = self.channelOverlay.message.text()
          self.emitFinished = False
          self.end(False)
          self.channelChange.emit(channel)
+      elif key == Qt.Key_D:
+         self.settings['deinterlace'] = not self.settings['deinterlace']
+         self.bookmark = int(float(self.mplayer.position) * self.mplayer.fps)
+         self.startMPlayer()
       else:
          return False
       return True
       
       
    def seek(self, amount):
+      if self.mplayer.position + amount < 0:
+         self.seekedPastStart.emit()
       self.seekOverlay.showTimed()
       self.mplayer.seekRelative(amount)
       
@@ -131,6 +138,7 @@ class Player(QObject):
    def end(self, eof = True):
       #  This gets called twice in some cases, but we only want to do it once
       if not self.ended:
+         self.checkRecording()
          if eof and self.recording:
             print 'Restarting'
             self.startMPlayer(True)
@@ -144,7 +152,7 @@ class Player(QObject):
          self.mythDB.saveBookmark(self.mplayer, eof)
          self.ended = True
          if self.emitFinished:
-            self.finished.emit()
+            self.finished.emit(eof)
       
       
       
@@ -167,13 +175,17 @@ class Player(QObject):
          self.videoOutput.resize(width, height)
          
    def playbackStarted(self):
+      if self.startAtEnd:
+         self.bookmark = int(float(self.mplayer.length - 5) * self.mplayer.fps)
+         self.startAtEnd = False
+         
       if self.bookmark > 0:
          # Ignore commercial skips prior to the bookmark
          if len(self.starts) > 0:
             while self.starts[self.nextSkip] < self.bookmark:
                self.nextSkip += 1
                
-         self.mplayer.seek(int(float(self.bookmark) / self.mplayer.fps))
+         self.mplayer.seekRelative(int(float(self.bookmark) / self.mplayer.fps))
          self.bookmark = 0 # Don't do this again, even if we get the signal again
          
          
@@ -225,8 +237,4 @@ class Player(QObject):
       
    def checkRecording(self):
       self.recording = self.mythDB.programInUse(self.program)
-      if not self.recording:
-         self.inUseTimer.stop() # No need to continue checking once it has stopped
-         
-      
-      
+

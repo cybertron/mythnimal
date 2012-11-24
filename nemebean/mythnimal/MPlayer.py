@@ -49,6 +49,7 @@ class MPlayer(QObject):
       self.lastVolume = time.time()
       self.lastVolumeValue = 0
       self.filename = filename
+      self.fps = 0
 
       self.process = QProcess()
       self.process.readyReadStandardOutput.connect(self.readStdout)

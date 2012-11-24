@@ -69,6 +69,7 @@ class Channel(Base):
    channum = Column(String)
    callsign = Column(String)
    name = Column(String)
+   sourceid = Column(Integer)
    
    def __init__(self):
       self.chanid = 0
@@ -90,4 +91,13 @@ class CardInput(Base):
    sourceid = Column(Integer)
    startchan = Column(String)
    displayname = Column(String)
+   
+   
+class TVChain(Base):
+   __tablename__ = 'tvchain'
+   chanid = Column(Integer, primary_key=True)
+   starttime = Column(DateTime, primary_key=True)
+   chainid = Column(String)
+   chainpos = Column(Integer)
+   cardtype = Column(String)
    
