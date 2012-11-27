@@ -126,6 +126,9 @@ class MythDB:
    def getChannelByNum(self, num):
       return self.session.query(Channel).filter(Channel.channum == num).first()
       
+   def getAllChannels(self):
+      return self.session.query(Channel).order_by(Channel.channum).all()
+      
       
    def getSetting(self, name):
       return self.session.query(Settings).filter(Settings.value == name).first().data
@@ -142,5 +145,13 @@ class MythDB:
                                         .filter(TVChain.cardtype != 'DUMMY') \
                                         .order_by(TVChain.chainpos) \
                                         .all()
+                                        
+                                        
+   def getProgramSchedule(self, chanId, startTime, endTime):
+      return self.session.query(ProgramSchedule).filter(ProgramSchedule.chanid == chanId) \
+                                                .filter(ProgramSchedule.starttime >= startTime) \
+                                                .filter(ProgramSchedule.starttime < endTime) \
+                                                .order_by(ProgramSchedule.chanid) \
+                                                .all()
 
       

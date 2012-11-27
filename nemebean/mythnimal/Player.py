@@ -22,6 +22,7 @@ from VideoOutput import VideoOutput
 from MPlayer import MPlayer
 from MythDBObjects import Markup
 from Overlays import *
+from ChannelGuide import ChannelGuide
 import os
 
 class Player(QObject):
@@ -121,8 +122,17 @@ class Player(QObject):
          self.channelChange.emit(channel)
       elif key == Qt.Key_D:
          self.settings['deinterlace'] = not self.settings['deinterlace']
-         self.bookmark = int(float(self.mplayer.position) * self.mplayer.fps)
+         self.setBookmarkSeconds(self.mplayer.position)
+         if self.settings['deinterlace']:
+            self.showMessage('Deinterlacing On')
+         else:
+            self.showMessage('Deinterlacing Off')
          self.startMPlayer()
+      elif key == Qt.Key_G:
+         if self.currentChannel is not None:
+            self.guide = ChannelGuide(self.currentChannel, self.mythDB, self.videoOutput)
+            self.guide.showFullScreen()
+            self.guide.raise_()
       else:
          return False
       return True
@@ -176,7 +186,7 @@ class Player(QObject):
          
    def playbackStarted(self):
       if self.startAtEnd:
-         self.bookmark = int(float(self.mplayer.length - 5) * self.mplayer.fps)
+         self.setBookmarkSeconds(self.mplayer.length - 5)
          self.startAtEnd = False
          
       if self.bookmark > 0:
@@ -237,4 +247,8 @@ class Player(QObject):
       
    def checkRecording(self):
       self.recording = self.mythDB.programInUse(self.program)
+      
+      
+   def setBookmarkSeconds(self, seconds):
+      self.bookmark = int(float(seconds) * self.mplayer.fps)
 

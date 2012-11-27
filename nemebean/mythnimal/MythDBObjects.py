@@ -101,3 +101,19 @@ class TVChain(Base):
    chainpos = Column(Integer)
    cardtype = Column(String)
    
+   
+class ProgramSchedule(Base):
+   __tablename__ = 'program'
+   chanid = Column(Integer, primary_key = True)
+   starttime = Column(DateTime, primary_key = True)
+   endtime = Column(DateTime)
+   title = Column(String)
+   subtitle = Column(String)
+   description = Column(String)
+   originalairdate = Column(DateTime)
+   manualid = Column(Integer, primary_key = True)
+   
+   def __repr__(self):
+      return 'ProgramSchedule(' + str(self.chanid) + ', ' + str(self.starttime) + ', ' + str(self.endtime) + \
+      ', ' + self.title + ', ' + self.subtitle + ', ' + self.description + ')'
+   

@@ -267,6 +267,7 @@ class MainForm(QDialog):
    def startPlayer(self, filename, live = False, startAtEnd = False):
       if filename is not None:
          self.player = Player(self.x(), self.y(), filename, self.mythDB, startAtEnd)
+         self.player.finished.connect(self.activateWindow)
          if live:
             self.player.finished.connect(self.playerStopped)
             self.player.channelChange.connect(self.changeChannel)
@@ -277,6 +278,7 @@ class MainForm(QDialog):
    def playerStopped(self, eof):
       if not eof:
          self.mythControl.stopLiveTV()
+         self.activateWindow()
       else: # Go to the next live TV recording
          nextChain = None
          while nextChain == None:
