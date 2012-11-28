@@ -98,8 +98,12 @@ class MainForm(QDialog):
       self.programInfoLayout.addWidget(self.programTitle)
       self.programSubtitle = self.wrappedLabel()
       self.programInfoLayout.addWidget(self.programSubtitle)
-      self.programDescription = QTextEdit()
-      self.programInfoLayout.addWidget(self.programDescription)
+      self.programStartTime = self.wrappedLabel()
+      self.programInfoLayout.addWidget(self.programStartTime)
+      self.programTime = self.wrappedLabel()
+      self.programInfoLayout.addWidget(self.programTime)
+      self.programDescription = self.wrappedLabel()
+      self.programInfoLayout.addWidget(self.programDescription, 1)
       
       self.columnLayout.addLayout(self.programInfoLayout, 1)
       
@@ -191,9 +195,14 @@ class MainForm(QDialog):
       filename = self.getFullPath(details.basename)
       filename += '.png'
       self.programThumbnail.setPixmap(QPixmap(filename))
-      self.programChannel.setText(channel.channum + ' ' + channel.name)
+      if channel is not None:
+         self.programChannel.setText(channel.channum + ' ' + channel.name)
+      else:
+         self.programChannel.setText('NA')
       self.programTitle.setText(details.title)
       self.programSubtitle.setText(details.subtitle)
+      self.programStartTime.setText(str(details.starttime))
+      self.programTime.setText(str(int((details.endtime - details.starttime).total_seconds() / 60)) + ' minutes')
       self.programDescription.setText(details.description)
       
       

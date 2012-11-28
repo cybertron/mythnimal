@@ -1,4 +1,4 @@
-from PyQt4.QtGui import QDialog, QHBoxLayout, QVBoxLayout, QLabel, QWidget
+from PyQt4.QtGui import QDialog, QHBoxLayout, QVBoxLayout, QLabel, QWidget, QSizePolicy
 from PyQt4.QtCore import Qt, pyqtSignal
 import datetime
 
@@ -7,7 +7,12 @@ class ChannelGuide(QDialog):
       QDialog.__init__(self, parent)
       self.mythDB = mythDB
       self.visibleChannels = 10
-      self.startTime = datetime.datetime.today()
+      self.startTime = datetime.datetime.today().replace(second = 0, microsecond = 0)
+      if self.startTime.minute >= 30:
+         self.startTime = self.startTime.replace(minute = 30)
+      else:
+         self.startTime = self.startTime.replace(minute = 0)
+      self.selectedStartTime = self.startTime
       
       self.channels = self.mythDB.getAllChannels()
       
@@ -65,7 +70,8 @@ class ChannelGuide(QDialog):
          startChanIndex += len(self.channels)
       endChanIndex = startChanIndex + self.visibleChannels
       
-      endTime = self.startTime + datetime.timedelta(hours = 2)
+      displayLength = datetime.timedelta(hours = 2)
+      endTime = self.startTime + displayLength
       
       QWidget().setLayout(self.channelLayout)
       self.channelLayout = QVBoxLayout(self.channelWidget)
@@ -77,10 +83,26 @@ class ChannelGuide(QDialog):
          
          layout = QHBoxLayout()
          self.channelLayout.addLayout(layout)
-         layout.addWidget(GuideItem(str(self.channels[wrappedI].channum)))
+         newItem = GuideItem(str(self.channels[wrappedI].channum))
+         newItem.setMaximumWidth(125)
+         newItem.setMinimumWidth(125)
+         newItem.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Ignored)
+         newItem.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+         layout.addWidget(newItem)
          
          for j in selectedPrograms:
-            layout.addWidget(GuideItem(j.title))
+            start = j.starttime
+            if start < self.startTime:
+               start = self.startTime
+            end = j.endtime
+            if end > self.startTime + displayLength:
+               end = self.startTime + displayLength
+            duration = end - start
+            newItem = GuideItem(j.title)
+            if i == self.selectedChannel and start <= self.selectedStartTime and end > self.selectedStartTime:
+               newItem.select()
+            layout.addWidget(newItem, int(duration.total_seconds() / displayLength.total_seconds() * 100))
+               
             
             
 class GuideItem(QLabel):
@@ -89,8 +111,10 @@ class GuideItem(QLabel):
       QLabel.__init__(self, text)
       
       self.selectedStyle = 'QLabel {border: 3px solid white; font-size: 30pt}'
-      self.normalStyle = 'QLabel {border: 1px solid white; font-size: 30pt}'
+      self.normalStyle = 'QLabel {border: 1px dashed white; font-size: 30pt}'
       self.setStyleSheet(self.normalStyle)
+      self.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
+      self.setWordWrap(True)
       
       
    def select(self):

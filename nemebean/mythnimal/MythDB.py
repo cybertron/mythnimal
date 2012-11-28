@@ -149,7 +149,7 @@ class MythDB:
                                         
    def getProgramSchedule(self, chanId, startTime, endTime):
       return self.session.query(ProgramSchedule).filter(ProgramSchedule.chanid == chanId) \
-                                                .filter(ProgramSchedule.starttime >= startTime) \
+                                                .filter(ProgramSchedule.endtime > startTime) \
                                                 .filter(ProgramSchedule.starttime < endTime) \
                                                 .order_by(ProgramSchedule.chanid) \
                                                 .all()
