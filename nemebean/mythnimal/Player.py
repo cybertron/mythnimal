@@ -117,9 +117,7 @@ class Player(QObject):
          self.channelOverlay.numberPressed(event.text())
       elif key == Qt.Key_Enter or key == Qt.Key_Return:
          channel = self.channelOverlay.message.text()
-         self.emitFinished = False
-         self.end(False)
-         self.channelChange.emit(channel)
+         self.changeChannel(channel)
       elif key == Qt.Key_D:
          self.settings['deinterlace'] = not self.settings['deinterlace']
          self.setBookmarkSeconds(self.mplayer.position)
@@ -131,12 +129,13 @@ class Player(QObject):
       elif key == Qt.Key_G:
          if self.currentChannel is not None:
             self.guide = ChannelGuide(self.currentChannel, self.mythDB, self.videoOutput)
+            self.guide.channelSelected.connect(self.changeChannel)
             self.guide.showFullScreen()
             self.guide.raise_()
       else:
          return False
       return True
-      
+
       
    def seek(self, amount):
       if self.mplayer.position + amount < 0:
@@ -163,6 +162,12 @@ class Player(QObject):
          self.ended = True
          if self.emitFinished:
             self.finished.emit(eof)
+            
+            
+   def changeChannel(self, channel):
+      self.emitFinished = False
+      self.end(False)
+      self.channelChange.emit(channel)
       
       
       
