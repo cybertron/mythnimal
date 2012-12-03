@@ -95,6 +95,12 @@ class MythDB:
       self.commit()
       
       
+   def setRecGroup(self, program, value):
+      program.recgroup = value
+      self.session.add(program)
+      self.commit()
+      
+      
    def commit(self):
       """self.session.commit should never be used directly, so that writes to an unsupported
       DB schema do not happen."""

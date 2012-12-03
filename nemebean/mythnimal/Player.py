@@ -29,6 +29,7 @@ class Player(QObject):
    finished = pyqtSignal(bool)
    channelChange = pyqtSignal(str)
    seekedPastStart = pyqtSignal()
+   toggleRecording = pyqtSignal()
    def __init__(self, x, y, filename, mythDB, startAtEnd = False):
       QObject.__init__(self)
       
@@ -132,6 +133,9 @@ class Player(QObject):
             self.guide.channelSelected.connect(self.changeChannel)
             self.guide.showFullScreen()
             self.guide.raise_()
+      elif key == Qt.Key_R:
+         if self.currentChannel is not None:
+            self.toggleRecording.emit()
       else:
          return False
       return True

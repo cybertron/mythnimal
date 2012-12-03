@@ -31,6 +31,8 @@ class MythControl:
       self.connected = False
       self.liveTVRecorder = None
       self.currentChannel = None
+      self.recordCurrent = False
+      
       self.verbose = True
       
       self.backendIP = self.mythDB.getSetting('MasterServerIP')
@@ -120,10 +122,9 @@ class MythControl:
       
          
    def changeChannel(self, channel, callback = None):
-      # TODO Need to check this at some point
       channelInfo = self.mythDB.getChannelByNum(channel)
       response = self.sendCommand(self.query() + '[]:[]SHOULD_SWITCH_CARD[]:[]' + str(channelInfo.chanid))
-      if response == '1':
+      if response == '1' or self.recordCurrent:
          if not self.switchCard(channelInfo):
             channel = self.currentChannel
          else:
@@ -193,11 +194,26 @@ class MythControl:
       if not response.startswith('ok'):
          print 'Failed to stop live tv'
          
-      response = self.sendCommand(self.query() + '[]:[]FINISH_RECORDING')
-      if not response.startswith('ok'):
-         print 'Failed to stop recorder'
-         
+      # Based on packet captures of the official frontend, this isn't ever necessary
+      if False: #not self.recordCurrent:
+         response = self.sendCommand(self.query() + '[]:[]FINISH_RECORDING')
+         if not response.startswith('ok'):
+            print 'Failed to stop recorder'
+            
       self.liveTVRecorder = None
+      
+      
+   def toggleRecording(self, program):
+      if self.liveTVRecorder is None:
+         return
+      
+      self.recordCurrent = not self.recordCurrent
+      
+      value = 'Default' if self.recordCurrent else 'LiveTV'
+      self.mythDB.setRecGroup(program, value)
+      
+      value = '1' if self.recordCurrent else '0'
+      self.sendCommand(self.query() + '[]:[]SET_LIVE_RECORDING[]:[]' + value)
       
       
    def query(self):
@@ -208,7 +224,7 @@ class MythControl:
       """I think this is the proper syntax for this command, but I'm not 100% sure.  Myth isn't
       complaining about it when I send it, but my testing suggests that it forces deletion
       whether I include the FORCE option or not, and the FORGET is difficult to test."""
-      ts = program.starttime.strftime('%Y%m%d%H%M%S')
+      ts = program.mythStart()
       command = 'DELETE_RECORDING ' + str(program.chanid) + ' ' + ts + ' FORCE'
       if forget:
          command += ' FORGET'

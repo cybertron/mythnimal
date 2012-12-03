@@ -26,6 +26,7 @@ class Program(Base):
    title = Column(String)
    subtitle = Column(String)
    description = Column(String)
+   recgroup = Column(String)
    starttime = Column(DateTime)
    endtime = Column(DateTime)
    chanid = Column(Integer)
@@ -37,6 +38,9 @@ class Program(Base):
    def __repr__(self):
       return 'Program(' + self.basename + '\n' + self.title + '\n' + self.subtitle + '\n' + self.description + '\n' + \
              str(self.starttime) + '\n' + str(self.endtime) + '\n' + str(self.chanid) + '\n' + str(self.bookmark) + ')'
+   
+   def mythStart(self):
+      return starttime.strftime('%Y%m%d%H%M%S')
       
       
 class Markup(Base):

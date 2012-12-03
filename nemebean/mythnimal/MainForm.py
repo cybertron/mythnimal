@@ -281,6 +281,7 @@ class MainForm(QDialog):
             self.player.finished.connect(self.playerStopped)
             self.player.channelChange.connect(self.changeChannel)
             self.player.seekedPastStart.connect(self.playPreviousInChain)
+            self.player.toggleRecording.connect(self.toggleRecording)
             self.player.currentChannel = self.mythControl.currentChannel
             
             
@@ -317,6 +318,16 @@ class MainForm(QDialog):
       for i, entry in enumerate(chain):
          if entry.chanid == currentProgram.chanid and entry.starttime == currentProgram.starttime:
             return i, chain, entry
+            
+            
+   def toggleRecording(self):
+      program = self.mythDB.getProgram(self.player.filename)
+      self.mythControl.toggleRecording(program)
+      if self.mythControl.recordCurrent:
+         self.player.showMessage('Recording current program')
+      else:
+         self.player.showMessage('Not recording current program')
+      
             
    def keyPressEvent(self, event):
       key = event.key()
