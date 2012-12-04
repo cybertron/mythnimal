@@ -36,12 +36,19 @@ class ChannelGuide(QDialog):
       self.infoLayout = QVBoxLayout()
       self.mainLayout.addLayout(self.infoLayout, 1)
       
-      self.programTitle = QLabel('Title')
+      self.programTitle = self.createLabel('Title')
       self.infoLayout.addWidget(self.programTitle)
-      self.programSubtitle = QLabel('Subtitle')
+      self.programSubtitle = self.createLabel('Subtitle')
       self.infoLayout.addWidget(self.programSubtitle)
-      self.programDescription = QLabel('Description')
-      self.infoLayout.addWidget(self.programDescription)
+      self.programDescription = self.createLabel('Description')
+      self.programDescription.setStyleSheet('QLabel {font-size: 20pt}')
+      self.infoLayout.addWidget(self.programDescription, 1)
+      
+   def createLabel(self, text):
+      label = QLabel(text)
+      label.setWordWrap(True)
+      label.setStyleSheet('QLabel {font-size: 30pt}')
+      return label
       
       
    def keyPressEvent(self, event):
@@ -134,10 +141,17 @@ class ChannelGuide(QDialog):
             if wrappedI == self.selectedChannel:
                print start, self.selectedStartTime, end
             if wrappedI == self.selectedChannel and start <= self.selectedStartTime and end > self.selectedStartTime:
-               newItem.select()
-               self.selectedItem = newItem
+               self.select(newItem)
                self.selectedStartTime = start
             layout.addWidget(newItem, int(duration.total_seconds() / self.displayLength.total_seconds() * 100))
+            
+         
+   def select(self, item):
+      item.select()
+      self.selectedItem = item
+      self.programTitle.setText(item.program.title)
+      self.programSubtitle.setText(item.program.subtitle)
+      self.programDescription.setText(item.program.description)
                
             
             
