@@ -40,7 +40,7 @@ class Program(Base):
              str(self.starttime) + '\n' + str(self.endtime) + '\n' + str(self.chanid) + '\n' + str(self.bookmark) + ')'
    
    def mythStart(self):
-      return starttime.strftime('%Y%m%d%H%M%S')
+      return self.starttime.strftime('%Y%m%d%H%M%S')
       
       
 class Markup(Base):
