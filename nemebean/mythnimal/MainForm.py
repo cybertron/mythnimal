@@ -46,6 +46,7 @@ class MainForm(QDialog):
       self.refreshShowList()
       
       self.setWindowTitle('Mythnimal')
+      self.setWindowFlags(Qt.CustomizeWindowHint | Qt.WindowMinMaxButtonsHint)
       self.resize(1024, 600)
       self.mainMenu.focus()
       self.show()

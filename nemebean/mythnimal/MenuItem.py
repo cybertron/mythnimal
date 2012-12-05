@@ -44,8 +44,8 @@ class SimpleMenuItem(MenuItem):
       self.layout.addWidget(self.label)
       
       self.baseStyle = self.label.styleSheet()
-      self.selectedStyle = 'QLabel { text-decoration: underline; }'
-      self.focusedSelectedStyle = 'QLabel { font-weight: bold; text-decoration: underline; }'
+      self.selectedStyle = 'QLabel { border: 1px dotted white; }'
+      self.focusedSelectedStyle = 'QLabel { border: 1px solid white; }'
       
       self.setMinimumHeight(25)
       
@@ -78,7 +78,7 @@ class ProgramMenuItem(MenuItem):
       self.layout.addWidget(self.programLabel)
       
       self.baseStyle = self.programLabel.styleSheet()
-      self.focusedSelectedStyle = 'QLabel { font-weight: bold; text-decoration: underline; }'
+      self.focusedSelectedStyle = 'QLabel { border: 1px solid white; }'
       
       self.setMinimumHeight(25)
       
