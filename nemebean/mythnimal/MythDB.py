@@ -23,7 +23,7 @@ from MythDBObjects import *
 
 class MythDB:
    # Schema versions above this have not been verified to work
-   supportedSchemas = [1264]
+   supportedSchemas = [1264, 1299]
    def __init__(self, host, user, password):
       self.engine = create_engine('mysql://' + user + ':' + password + '@' + host + '/mythconverg')
       
@@ -102,7 +102,7 @@ class MythDB:
       
       
    def commit(self):
-      """self.session.commit should never be used directly, so that writes to an unsupported
+      """self.session.commit should never be used directly so that writes to an unsupported
       DB schema do not happen."""
       if self.writes:
          self.session.commit()

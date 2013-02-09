@@ -25,7 +25,7 @@ class Version:
       self.token = token
 
 class MythControl:
-   supportedVersions = [Version(63, '3875641D'), Version(71, 'D78EFD6F')]
+   supportedVersions = [Version(63, '3875641D'), Version(72, 'D78EFD6F')]
    def __init__(self, mythDB):
       self.mythDB = mythDB
       self.connected = False
@@ -65,7 +65,7 @@ class MythControl:
       if response:
          length = self.recv(8)
          if self.verbose:
-            print length
+            print length,
          data = self.recv(int(length))
          if self.verbose:
             print data
