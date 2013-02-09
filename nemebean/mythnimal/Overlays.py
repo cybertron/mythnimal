@@ -92,7 +92,7 @@ class MessageOverlay(Overlay):
 class ChannelOverlay(MessageOverlay):
    def __init__(self, keyPressHandler, parent = None):
       MessageOverlay.__init__(self, keyPressHandler, parent)
-      self.message = ScaledLabel(scale = 1.5)
+      self.message.scale = 1.5
       self.inputActive = False
       
       
