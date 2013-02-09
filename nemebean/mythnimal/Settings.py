@@ -39,3 +39,6 @@ class Settings:
       
    def save(self):
       self.configHandler.saveObject('settings', self.values)
+      
+
+settings = Settings()

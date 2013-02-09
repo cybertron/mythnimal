@@ -23,6 +23,7 @@ from MPlayer import MPlayer
 from MythDBObjects import Markup
 from Overlays import *
 from ChannelGuide import ChannelGuide
+from Settings import settings
 import os
 
 class Player(QObject):
@@ -57,9 +58,8 @@ class Player(QObject):
    def startMPlayer(self, restarting = False):
       if restarting:
          self.startAtEnd = True
-      from MainForm import MainForm
-      self.settings = MainForm.settings
-      self.fullPath = os.path.join(self.settings['mythFileDir'], self.filename)
+      
+      self.fullPath = os.path.join(settings['mythFileDir'], self.filename)
       self.mplayer = MPlayer(self.videoOutput.videoLabel,
                              self.fullPath,
                              self.buildMPlayerOptions())
@@ -71,7 +71,7 @@ class Player(QObject):
       
    def buildMPlayerOptions(self):
       opts = '-osdlevel 0 -cache 25000 -cache-min 1 '
-      if self.settings['deinterlace']:
+      if settings['deinterlace']:
          opts += '-vf yadif '
       opts += '-framedrop ' # yadif can have problems keeping up on HD content
       return opts
@@ -120,9 +120,9 @@ class Player(QObject):
          channel = self.channelOverlay.message.text()
          self.changeChannel(channel)
       elif key == Qt.Key_D:
-         self.settings['deinterlace'] = not self.settings['deinterlace']
+         settings['deinterlace'] = not settings['deinterlace']
          self.setBookmarkSeconds(self.mplayer.position)
-         if self.settings['deinterlace']:
+         if settings['deinterlace']:
             self.showMessage('Deinterlacing On')
          else:
             self.showMessage('Deinterlacing Off')

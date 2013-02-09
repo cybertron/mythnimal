@@ -18,7 +18,7 @@
 # @End License@
 from PyQt4.QtGui import *
 from PyQt4.QtCore import Qt, pyqtSignal, QTimer
-from Settings import Settings
+from Settings import settings
 from Player import Player
 from MythDB import MythDB
 from MythDBObjects import Program
@@ -31,17 +31,16 @@ import os
 import time
 
 class MainForm(QDialog):
-   settings = Settings()
    mythControl = None
    def __init__(self, parent = None):
       QDialog.__init__(self, parent)
       
       self.setupUI()
       
-      if self.settings['firstRun']:
+      if settings['firstRun']:
          self.initialSetup()
       
-      self.mythDB = MythDB(self.settings['dbHost'], self.settings['dbUser'], self.settings['dbPassword'])
+      self.mythDB = MythDB(settings['dbHost'], settings['dbUser'], settings['dbPassword'])
       self.mythControl = MythControl(self.mythDB)
       self.refreshShowList()
       
@@ -226,19 +225,19 @@ class MainForm(QDialog):
          
          
    def showSettingsTab(self):
-      self.dbHostInput.setText(self.settings['dbHost'])
-      self.dbUserInput.setText(self.settings['dbUser'])
-      self.dbPasswordInput.setText(self.settings['dbPassword'])
-      self.fileDirInput.setText(self.settings['mythFileDir'])
+      self.dbHostInput.setText(settings['dbHost'])
+      self.dbUserInput.setText(settings['dbUser'])
+      self.dbPasswordInput.setText(settings['dbPassword'])
+      self.fileDirInput.setText(settings['mythFileDir'])
       self.tabs.setCurrentWidget(self.settingsTab)
    
    
    def saveSettings(self):
-      self.settings['dbHost'] = str(self.dbHostInput.text())
-      self.settings['dbUser'] = str(self.dbUserInput.text())
-      self.settings['dbPassword'] = str(self.dbPasswordInput.text())
-      self.settings['mythFileDir'] = str(self.fileDirInput.text())
-      self.settings.save()
+      settings['dbHost'] = str(self.dbHostInput.text())
+      settings['dbUser'] = str(self.dbUserInput.text())
+      settings['dbPassword'] = str(self.dbPasswordInput.text())
+      settings['mythFileDir'] = str(self.fileDirInput.text())
+      settings.save()
       self.initConfig.hide()
       self.tabs.setCurrentWidget(self.mainMenuTab)
    
@@ -247,7 +246,7 @@ class MainForm(QDialog):
       
       
    def closeEvent(self, event):
-      self.settings.save()
+      settings.save()
       
       
    def initialSetup(self):
@@ -255,7 +254,7 @@ class MainForm(QDialog):
       self.initConfig.setLayout(self.settingsLayout)
       self.initConfig.exec_()
       self.settingsTab.setLayout(self.settingsLayout)
-      self.settings['firstRun'] = False
+      settings['firstRun'] = False
       
       
    def startLiveTV(self):
@@ -379,7 +378,7 @@ class MainForm(QDialog):
       
       
    def getFullPath(self, basename):
-      return os.path.join(self.settings['mythFileDir'], basename)
+      return os.path.join(settings['mythFileDir'], basename)
       
       
 class MessageDialog(QDialog):
