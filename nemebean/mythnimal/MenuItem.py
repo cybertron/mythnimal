@@ -43,11 +43,12 @@ class SimpleMenuItem(MenuItem):
       self.label = QLabel(title)
       self.layout.addWidget(self.label)
       
-      self.baseStyle = self.label.styleSheet()
-      self.selectedStyle = 'QLabel { border: 1px dotted white; }'
-      self.focusedSelectedStyle = 'QLabel { border: 1px solid white; }'
+      self.baseStyle = 'QLabel {font-size: 30px}'
+      self.selectedStyle = 'QLabel { border: 1px dotted white; font-size: 30px}'
+      self.focusedSelectedStyle = 'QLabel { border: 1px solid white; font-size: 30px}'
+      self.deselect()
       
-      self.setMinimumHeight(25)
+      self.setMinimumHeight(50)
       
    def select(self, focus):
       if not focus:
@@ -77,10 +78,11 @@ class ProgramMenuItem(MenuItem):
       self.programLabel = QLabel(text)
       self.layout.addWidget(self.programLabel)
       
-      self.baseStyle = self.programLabel.styleSheet()
-      self.focusedSelectedStyle = 'QLabel { border: 1px solid white; }'
+      self.baseStyle = 'QLabel {font-size: 30px}'
+      self.focusedSelectedStyle = 'QLabel { border: 1px solid white; font-size: 30px}'
+      self.deselect()
       
-      self.setMinimumHeight(25)
+      self.setMinimumHeight(50)
       
       
    def select(self, focus):

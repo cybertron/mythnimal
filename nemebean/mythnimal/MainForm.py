@@ -147,6 +147,7 @@ class MainForm(QDialog):
    def wrappedLabel(self):
       label = QLabel()
       label.setWordWrap(True)
+      label.setStyleSheet('QLabel {font-size: 30px}')
       return label
       
       

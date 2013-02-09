@@ -25,7 +25,7 @@ class Version:
       self.token = token
 
 class MythControl:
-   supportedVersions = [Version(63, '3875641D')]
+   supportedVersions = [Version(63, '3875641D'), Version(71, 'D78EFD6F')]
    def __init__(self, mythDB):
       self.mythDB = mythDB
       self.connected = False
@@ -39,9 +39,6 @@ class MythControl:
       self.backendPort = int(self.mythDB.getSetting('MasterServerPort'))
       self.backendVersion = None
       
-      self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-      self.socket.connect((self.backendIP, self.backendPort))
-      
       self.negotiateVersion()
       self.annPlayback()
       
@@ -50,7 +47,15 @@ class MythControl:
       self.sendCommand('DONE', response = False)
       
       
-   def sendCommand(self, command, response = True):
+   def sendCommand(self, command, response = True, force = False):
+      """ command: The string representing the command to be sent
+          response: Whether to wait for the response from mythbackend
+          force: Send whether or not we're connected - intended only for negotiating versions
+      """
+      if not force and not self.connected:
+         print 'Not connected to send command: %s' % command
+         return
+         
       length = len(command)
       length = str(length).ljust(8)
       commandStr = str(length + command)
@@ -59,6 +64,8 @@ class MythControl:
       self.socket.sendall(commandStr)
       if response:
          length = self.recv(8)
+         if self.verbose:
+            print length
          data = self.recv(int(length))
          if self.verbose:
             print data
@@ -81,7 +88,10 @@ class MythControl:
    def negotiateVersion(self):
       response = ''
       for nextVersion in self.supportedVersions:
-         response = self.sendCommand('MYTH_PROTO_VERSION ' + str(nextVersion.num) + ' ' + nextVersion.token)
+         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+         self.socket.connect((self.backendIP, self.backendPort))
+         command = 'MYTH_PROTO_VERSION %s %s' % (str(nextVersion.num), nextVersion.token)
+         response = self.sendCommand(command, force = True)
          if response.startswith('ACCEPT'):
             self.connected = True
             break
