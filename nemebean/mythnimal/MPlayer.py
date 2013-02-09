@@ -50,6 +50,7 @@ class MPlayer(QObject):
       self.lastVolumeValue = 0
       self.filename = filename
       self.fps = 0
+      self.ended = False
 
       self.process = QProcess()
       self.process.readyReadStandardOutput.connect(self.readStdout)
@@ -93,10 +94,14 @@ class MPlayer(QObject):
 
 
    def end(self):
+      self.ended = True
       self.timer.stop()
       self.process.terminate()
       time.sleep(.1)
       self.process.kill()
+      self.infoProcess.terminate()
+      time.sleep(.1)
+      self.infoProcess.kill()
 
 
    def seek(self, position):
@@ -219,10 +224,11 @@ class MPlayer(QObject):
       
       
    def infoFinished(self):
-      self.infoTimer = QTimer()
-      self.infoTimer.setSingleShot(True)
-      self.infoTimer.timeout.connect(self.startInfoProcess)
-      self.infoTimer.start(1000)
+      if not self.ended:
+         self.infoTimer = QTimer()
+         self.infoTimer.setSingleShot(True)
+         self.infoTimer.timeout.connect(self.startInfoProcess)
+         self.infoTimer.start(1000)
       
       
    def startInfoProcess(self):
