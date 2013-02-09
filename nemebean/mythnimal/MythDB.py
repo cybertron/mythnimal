@@ -18,6 +18,7 @@
 # @End License@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from PyQt4.QtCore import QTimer
 import os
 from MythDBObjects import *
 
@@ -27,15 +28,25 @@ class MythDB:
    def __init__(self, host, user, password):
       self.engine = create_engine('mysql://' + user + ':' + password + '@' + host + '/mythconverg')
       
-      
       Session = sessionmaker(bind=self.engine)
       self.session = Session()
       
       self.writes = False
-      schemaVersion = int(self.session.query(Settings).filter(Settings.value == 'DBSchemaVer').first().data)
+      schemaVersion = int(self.getSetting('DBSchemaVer'))
       # If not a supported schema, don't write to DB to avoid possible corruption
       if schemaVersion <= self.supportedSchemas[-1]:
          self.writes = True
+         
+      # Ping the MySQL server periodically so our connection doesn't drop
+      self.pingTimer = QTimer()
+      pingInterval = 5 * 60 * 1000  # 5 minutes
+      self.pingTimer.setInterval(pingInterval)
+      self.pingTimer.timeout.connect(self.ping)
+      self.pingTimer.start()
+         
+         
+   def ping(self):
+      return self.getSetting('DBSchemaVer')
       
    
    def showList(self):
