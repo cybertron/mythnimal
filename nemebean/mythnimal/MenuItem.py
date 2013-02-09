@@ -16,8 +16,9 @@
 #
 # Copyright 2012 Ben Nemec
 # @End License@
-from PyQt4.QtGui import QWidget, QLabel, QPalette, QColor, QHBoxLayout
+from PyQt4.QtGui import QWidget, QPalette, QColor, QHBoxLayout
 from PyQt4.QtCore import Qt, pyqtSignal
+from ScaledLabel import ScaledLabel
 
 class MenuItem(QWidget):
    """Base class for items that can be inserted into a MenuWidget"""
@@ -40,24 +41,21 @@ class SimpleMenuItem(MenuItem):
       
       self.id = title
       self.layout = QHBoxLayout(self)
-      self.label = QLabel(title)
+      self.label = ScaledLabel(title)
       self.layout.addWidget(self.label)
       
-      self.baseStyle = 'QLabel {font-size: 30px}'
-      self.selectedStyle = 'QLabel { border: 1px dotted white; font-size: 30px}'
-      self.focusedSelectedStyle = 'QLabel { border: 1px solid white; font-size: 30px}'
+      self.selectedStyle = 'border: 1px dotted white'
+      self.focusedSelectedStyle = 'border: 1px solid white'
       self.deselect()
-      
-      self.setMinimumHeight(50)
       
    def select(self, focus):
       if not focus:
-         self.label.setStyleSheet(self.selectedStyle)
+         self.label.setStyle(self.selectedStyle)
       else:
-         self.label.setStyleSheet(self.focusedSelectedStyle)
+         self.label.setStyle(self.focusedSelectedStyle)
       
    def deselect(self):
-      self.label.setStyleSheet(self.baseStyle)
+      self.label.setStyle('')
       
    
    
@@ -75,21 +73,18 @@ class ProgramMenuItem(MenuItem):
       text = programData.title
       if programData.subtitle != '':
          text += ' - ' + programData.subtitle
-      self.programLabel = QLabel(text)
+      self.programLabel = ScaledLabel(text)
       self.layout.addWidget(self.programLabel)
       
-      self.baseStyle = 'QLabel {font-size: 30px}'
-      self.focusedSelectedStyle = 'QLabel { border: 1px solid white; font-size: 30px}'
+      self.focusedSelectedStyle = 'border: 1px solid white'
       self.deselect()
-      
-      self.setMinimumHeight(50)
       
       
    def select(self, focus):
       if not focus:
-         self.programLabel.setStyleSheet(self.baseStyle)
+         self.programLabel.setStyle('')
       else:
-         self.programLabel.setStyleSheet(self.focusedSelectedStyle)
+         self.programLabel.setStyle(self.focusedSelectedStyle)
       
    def deselect(self):
-      self.programLabel.setStyleSheet(self.baseStyle)
+      self.programLabel.setStyle('')

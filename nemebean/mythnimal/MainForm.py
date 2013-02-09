@@ -27,6 +27,7 @@ from MenuItem import SimpleMenuItem, ProgramMenuItem
 from TabWidget import TabWidget
 from PairWidget import PairWidget
 from MythControl import MythControl
+from ScaledLabel import ScaledLabel
 import os
 import time
 
@@ -144,9 +145,8 @@ class MainForm(QDialog):
       
       
    def wrappedLabel(self):
-      label = QLabel()
+      label = ScaledLabel()
       label.setWordWrap(True)
-      label.setStyleSheet('QLabel {font-size: 30px}')
       return label
       
       
@@ -249,6 +249,10 @@ class MainForm(QDialog):
       settings.save()
       
       
+   def resizeEvent(self, event):
+      ScaledLabel.formHeight = event.size().height()
+      
+      
    def initialSetup(self):
       self.initConfig = QDialog()
       self.initConfig.setLayout(self.settingsLayout)
@@ -342,9 +346,9 @@ class MainForm(QDialog):
       menuLayout = QVBoxLayout(self.menuDialog)
       
       selected = self.mythDB.getProgram(self.programMenu.selectedItem().id)
-      title = QLabel(selected.title)
+      title = ScaledLabel(selected.title)
       menuLayout.addWidget(title)
-      subtitle = QLabel(selected.subtitle)
+      subtitle = ScaledLabel(selected.subtitle)
       menuLayout.addWidget(subtitle)
       
       programOptions = MenuWidget(self)
@@ -386,9 +390,8 @@ class MessageDialog(QDialog):
       QDialog.__init__(self, parent)
       self.setWindowFlags(Qt.Dialog | Qt.FramelessWindowHint)
       self.layout = QVBoxLayout(self)
-      self.label = QLabel()
+      self.label = ScaledLabel()
       self.label.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
-      self.label.setStyleSheet('QLabel {font-size: 30pt;}')
       self.layout.addWidget(self.label)
       
       self.timer = QTimer()

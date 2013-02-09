@@ -17,7 +17,7 @@
 # Copyright 2012 Ben Nemec
 # @End License@
 from PyQt4.QtCore import QObject, Qt, QTimer, pyqtSignal
-from PyQt4.QtGui import QDialog, QHBoxLayout, QLabel, QProgressBar, QX11Info
+from PyQt4.QtGui import QDialog, QHBoxLayout, QProgressBar, QX11Info
 from VideoOutput import VideoOutput
 from MPlayer import MPlayer
 from MythDBObjects import Markup
@@ -237,7 +237,8 @@ class Player(QObject):
       x = vidWidth / 2 + self.videoOutput.pos().x() - vidWidth / 2 + seekMargin
       y = vidHeight + self.videoOutput.pos().y() - self.seekOverlay.size().height() - seekMargin
       
-      self.seekOverlay.resize(vidWidth - seekMargin * 2, self.seekOverlay.size().height())
+      seekHeight = vidHeight / 15
+      self.seekOverlay.resize(vidWidth - seekMargin * 2, seekHeight)
       self.seekOverlay.move(x, y)
       
       self.messageOverlay.resize(vidWidth / 2, vidHeight / 8)

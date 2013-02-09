@@ -16,9 +16,10 @@
 #
 # Copyright 2012 Ben Nemec
 # @End License@
-from PyQt4.QtGui import QVBoxLayout, QDialog, QX11Info, QHBoxLayout, QProgressBar, QLabel
+from PyQt4.QtGui import QVBoxLayout, QDialog, QX11Info, QHBoxLayout, QProgressBar
 from PyQt4.QtCore import Qt, QTimer
 from MPlayer import MPlayer
+from ScaledLabel import ScaledLabel
 
 class Overlay(QDialog):
    def __init__(self, keyPressHandler, parent = None):
@@ -57,8 +58,12 @@ class SeekOverlay(Overlay):
       self.layout = QHBoxLayout(self)
       
       self.timeBar = QProgressBar()
-      self.timeBar.setStyleSheet('QProgressBar {font-size: 25pt;}')
       self.layout.addWidget(self.timeBar)
+      
+      
+   def resizeEvent(self, event):
+      textHeight = event.size().height() * .4
+      self.timeBar.setStyleSheet('QProgressBar {font-size: %dpt;}' % textHeight)
       
       
    def setTime(self, current, total):
@@ -74,10 +79,9 @@ class MessageOverlay(Overlay):
       Overlay.__init__(self, keyPressHandler, parent)
       
       self.layout = QVBoxLayout(self)
-      self.message = QLabel()
+      self.message = ScaledLabel()
       self.message.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
       self.message.setAttribute(Qt.WA_TranslucentBackground)
-      self.message.setStyleSheet('QLabel {font-size: 30pt;}')
       self.layout.addWidget(self.message)
       
       
@@ -88,7 +92,7 @@ class MessageOverlay(Overlay):
 class ChannelOverlay(MessageOverlay):
    def __init__(self, keyPressHandler, parent = None):
       MessageOverlay.__init__(self, keyPressHandler, parent)
-      self.message.setStyleSheet('QLabel {font-size: 50pt;}')
+      self.message = ScaledLabel(scale = 1.5)
       self.inputActive = False
       
       

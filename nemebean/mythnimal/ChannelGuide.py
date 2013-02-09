@@ -1,6 +1,7 @@
-from PyQt4.QtGui import QDialog, QHBoxLayout, QVBoxLayout, QLabel, QWidget, QSizePolicy
+from PyQt4.QtGui import QDialog, QHBoxLayout, QVBoxLayout, QWidget, QSizePolicy
 from PyQt4.QtCore import Qt, pyqtSignal
 import datetime
+from ScaledLabel import ScaledLabel
 
 class ChannelGuide(QDialog):
    channelSelected = pyqtSignal(str)
@@ -41,13 +42,11 @@ class ChannelGuide(QDialog):
       self.programSubtitle = self.createLabel('Subtitle')
       self.infoLayout.addWidget(self.programSubtitle)
       self.programDescription = self.createLabel('Description')
-      self.programDescription.setStyleSheet('QLabel {font-size: 20pt}')
       self.infoLayout.addWidget(self.programDescription, 1)
       
    def createLabel(self, text):
-      label = QLabel(text)
+      label = ScaledLabel(text)
       label.setWordWrap(True)
-      label.setStyleSheet('QLabel {font-size: 30pt}')
       return label
       
       
@@ -155,24 +154,24 @@ class ChannelGuide(QDialog):
                
             
             
-class GuideItem(QLabel):
+class GuideItem(ScaledLabel):
    selected = pyqtSignal()
    def __init__(self, text = '', program = None):
       if program != None:
          text = program.title
-      QLabel.__init__(self, text)
+      ScaledLabel.__init__(self, text)
       
       self.program = program
       
-      self.selectedStyle = 'QLabel {border: 3px solid white; font-size: 30pt}'
-      self.normalStyle = 'QLabel {border: 1px dashed white; font-size: 30pt}'
-      self.setStyleSheet(self.normalStyle)
+      self.selectedStyle = 'border: 3px solid white'
+      self.normalStyle = 'border: 1px dashed white'
+      self.setStyle(self.normalStyle)
       self.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
       self.setWordWrap(True)
       
       
    def select(self):
-      self.setStyleSheet(self.selectedStyle)
+      self.setStyle(self.selectedStyle)
    
    def deselect(self):
-      self.setStyleSheet(self.normalStyle)
+      self.setStyle(self.normalStyle)

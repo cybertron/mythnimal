@@ -46,6 +46,7 @@ class MenuWidget(QScrollArea):
       
       
    def add(self, item):
+      item.setMaximumWidth(self.width())
       self.layout.addWidget(item)
       self.items.append(item)
       if self.selectedIndex is None:

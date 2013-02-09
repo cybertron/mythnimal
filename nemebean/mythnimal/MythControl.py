@@ -177,7 +177,11 @@ class MythControl:
                callback()
          response = self.sendCommand(self.query() + '[]:[]GET_CURRENT_RECORDING')
          parts = response.split('[]:[]')
-         return os.path.basename(parts[8])
+         # Find the filename in a way that isn't dependent on the stupid ProgramInfo struct
+         for i in parts:
+            # Might need to recognize other extensions?
+            if i.endswith('.mpg'):
+               return os.path.basename(i)
       else:
          return None
       
