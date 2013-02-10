@@ -225,20 +225,21 @@ class Player(QObject):
          
    def createOverlays(self):
       self.seekOverlay = SeekOverlay(self.keyPressHandler, self.videoOutput)
-      self.seekOverlay.showTimed()
+      self.seekOverlay.shown.connect(self.placeOverlays)
       self.messageOverlay = MessageOverlay(self.keyPressHandler, self.videoOutput)
+      self.messageOverlay.shown.connect(self.placeOverlays)
       self.channelOverlay = ChannelOverlay(self.keyPressHandler, self.videoOutput)
+      self.channelOverlay.shown.connect(self.placeOverlays)
       
    def placeOverlays(self):
       vidWidth = self.videoOutput.size().width()
       vidHeight = self.videoOutput.size().height()
       seekMargin = 20
+      seekHeight = vidHeight / 15
       
+      self.seekOverlay.resize(vidWidth - seekMargin * 2, seekHeight)
       x = vidWidth / 2 + self.videoOutput.pos().x() - vidWidth / 2 + seekMargin
       y = vidHeight + self.videoOutput.pos().y() - self.seekOverlay.size().height() - seekMargin
-      
-      seekHeight = vidHeight / 15
-      self.seekOverlay.resize(vidWidth - seekMargin * 2, seekHeight)
       self.seekOverlay.move(x, y)
       
       self.messageOverlay.resize(vidWidth / 2, vidHeight / 8)

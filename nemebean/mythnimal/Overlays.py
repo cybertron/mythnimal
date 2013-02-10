@@ -17,11 +17,12 @@
 # Copyright 2012, 2013 Ben Nemec
 # @End License@
 from PyQt4.QtGui import QVBoxLayout, QDialog, QX11Info, QHBoxLayout, QProgressBar
-from PyQt4.QtCore import Qt, QTimer
+from PyQt4.QtCore import Qt, QTimer, pyqtSignal
 from MPlayer import MPlayer
 from ScaledLabel import ScaledLabel
 
 class Overlay(QDialog):
+   shown = pyqtSignal()
    def __init__(self, keyPressHandler, parent = None):
       QDialog.__init__(self, parent)
       
