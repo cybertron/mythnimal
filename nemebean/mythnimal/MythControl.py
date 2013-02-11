@@ -18,6 +18,7 @@
 # @End License@
 import socket, datetime, os
 import time
+from Settings import settings
 
 class Version:
    def __init__(self, num, token):
@@ -171,7 +172,7 @@ class MythControl:
          # For some reason Myth returns a wrong filename if we do the next step immediately
          # Fortunately, we should wait a few seconds to let it get ahead anyway
          start = time.time()
-         while time.time() - start < 5:
+         while time.time() - start < settings['bufferTime']:
             time.sleep(.1)
             if callback is not None:
                callback()

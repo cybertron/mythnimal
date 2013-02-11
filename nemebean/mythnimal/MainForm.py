@@ -131,6 +131,13 @@ class MainForm(QDialog):
       self.fileDirInput = QLineEdit()
       self.dbGroupLayout.addWidget(PairWidget('Myth File Directory', self.fileDirInput))
       
+      self.miscGroup = QGroupBox('Miscellaneous')
+      self.miscGroupLayout = QVBoxLayout()
+      self.miscGroup.setLayout(self.miscGroupLayout)
+      self.settingsInputLayout.addWidget(self.miscGroup)
+      
+      self.bufferTimeInput = QSpinBox()
+      self.miscGroupLayout.addWidget(PairWidget('Buffer Time', self.bufferTimeInput))
       
       self.settingsButtonLayout = QHBoxLayout()
       self.settingsLayout.addLayout(self.settingsButtonLayout)
@@ -229,6 +236,7 @@ class MainForm(QDialog):
       self.dbUserInput.setText(settings['dbUser'])
       self.dbPasswordInput.setText(settings['dbPassword'])
       self.fileDirInput.setText(settings['mythFileDir'])
+      self.bufferTimeInput.setValue(settings['bufferTime'])
       self.tabs.setCurrentWidget(self.settingsTab)
    
    
@@ -237,8 +245,10 @@ class MainForm(QDialog):
       settings['dbUser'] = str(self.dbUserInput.text())
       settings['dbPassword'] = str(self.dbPasswordInput.text())
       settings['mythFileDir'] = str(self.fileDirInput.text())
+      settings['bufferTime'] = self.bufferTimeInput.value()
       settings.save()
-      self.initConfig.hide()
+      if settings['firstRun']:
+         self.initConfig.hide()
       self.tabs.setCurrentWidget(self.mainMenuTab)
    
    def discardSettings(self):

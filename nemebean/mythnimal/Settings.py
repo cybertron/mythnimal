@@ -27,6 +27,7 @@ class Settings:
       self.values['dbPassword'] = 'mythtv'
       self.values['firstRun'] = True
       self.values['deinterlace'] = True
+      self.values['bufferTime'] = 5
       
       self.configHandler = ConfigHandler('mythnimal')
       self.configHandler.loadDict('settings', self.values)
