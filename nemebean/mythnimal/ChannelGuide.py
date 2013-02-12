@@ -23,9 +23,10 @@ from ScaledLabel import ScaledLabel
 
 class ChannelGuide(QDialog):
    channelSelected = pyqtSignal(str)
-   def __init__(self, startChannel, mythDB, parent = None):
+   def __init__(self, startChannel, mythDB, videoWidget, parent = None):
       QDialog.__init__(self, parent)
       self.mythDB = mythDB
+      self.videoWidget = videoWidget
       self.visibleChannels = 11
       self.startTime = datetime.datetime.today().replace(second = 0, microsecond = 0)
       if self.startTime.minute >= 30:
@@ -46,6 +47,7 @@ class ChannelGuide(QDialog):
       
       
    def setupUI(self):
+      self.setStyleSheet('QDialog { background-color: black; }')
       self.mainLayout = QHBoxLayout(self)
       
       self.channelWidget = QWidget()
@@ -55,12 +57,13 @@ class ChannelGuide(QDialog):
       self.infoLayout = QVBoxLayout()
       self.mainLayout.addLayout(self.infoLayout, 1)
       
+      self.infoLayout.addWidget(self.videoWidget, 3)
       self.programTitle = self.createLabel('Title')
-      self.infoLayout.addWidget(self.programTitle)
+      self.infoLayout.addWidget(self.programTitle, 1)
       self.programSubtitle = self.createLabel('Subtitle')
-      self.infoLayout.addWidget(self.programSubtitle)
+      self.infoLayout.addWidget(self.programSubtitle, 1)
       self.programDescription = self.createLabel('Description')
-      self.infoLayout.addWidget(self.programDescription, 1)
+      self.infoLayout.addWidget(self.programDescription, 5)
       
    def createLabel(self, text):
       label = ScaledLabel(text)
@@ -89,6 +92,11 @@ class ChannelGuide(QDialog):
          self.channelSelected.emit(self.channels[self.selectedChannel].channum)
       else:
          QDialog.keyPressEvent(self, event)
+         
+         
+   def hideEvent(self, event):
+      self.videoWidget.setParent(None)
+      self.videoWidget.showFullScreen()
          
          
    def validateSelected(self):
