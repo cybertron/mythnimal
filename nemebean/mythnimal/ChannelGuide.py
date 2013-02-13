@@ -83,6 +83,14 @@ class ChannelGuide(QDialog):
          self.selectedChannel += 1
          self.validateSelected()
          self.refreshDisplay()
+      elif key == Qt.Key_PageUp:
+         self.selectedChannel -= self.visibleChannels / 2
+         self.validateSelected()
+         self.refreshDisplay()
+      elif key == Qt.Key_PageDown:
+         self.selectedChannel += self.visibleChannels / 2
+         self.validateSelected()
+         self.refreshDisplay()
       elif key == Qt.Key_Right:
          self.nextTime()
       elif key == Qt.Key_Left:
