@@ -224,6 +224,7 @@ class MainForm(QDialog):
       if index == 0:
          self.startLiveTV()
       elif index == 1:
+         self.refreshShowList()
          self.tabs.setCurrentWidget(self.recordingsTab)
       elif index == 2:
          self.showSettingsTab()
