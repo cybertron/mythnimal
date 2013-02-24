@@ -192,7 +192,7 @@ class MythControl:
       start = datetime.datetime.today()
       while not response.startswith('1'):
          time.sleep(.5)
-         if datetime.datetime.today() - start > datetime.timedelta(seconds = 1):
+         if datetime.datetime.today() - start > datetime.timedelta(seconds = 5):
             print 'Timed out waiting for recording to start'
             self.stopLiveTV()
             return False

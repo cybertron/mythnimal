@@ -46,7 +46,8 @@ class MenuWidget(QScrollArea):
       
       
    def add(self, item):
-      item.setMaximumWidth(self.width())
+      # Subtract 20 to account for scroll bar.  I think that's the problem anyway.
+      item.setMaximumWidth(self.width() - 20)
       self.layout.addWidget(item)
       self.items.append(item)
       if self.selectedIndex is None:

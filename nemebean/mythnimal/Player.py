@@ -107,7 +107,7 @@ class Player(QObject):
             self.showMessage('Zoom: 25%')
       elif key == Qt.Key_I:
          self.seekOverlay.showTimed()
-         print self.seekOverlay.pos()
+         print self.seekOverlay.pos(), self.seekOverlay.size()
          if self.currentChannel is not None:
             self.channelOverlay.message.setText(self.currentChannel)
             self.channelOverlay.showTimed()

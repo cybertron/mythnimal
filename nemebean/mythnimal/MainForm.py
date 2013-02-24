@@ -291,7 +291,9 @@ class MainForm(QDialog):
       
    def startPlayer(self, filename, live = False, startAtEnd = False):
       if filename is not None:
-         self.player = Player(self.x(), self.y(), filename, self.mythDB, startAtEnd)
+         playerX = self.x() + self.width() / 2
+         playerY = self.y() + self.height() / 2
+         self.player = Player(playerX, playerY, filename, self.mythDB, startAtEnd)
          self.player.finished.connect(self.activateWindow)
          if live:
             self.player.finished.connect(self.playerStopped)
