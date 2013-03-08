@@ -33,6 +33,7 @@ class MythControl:
       self.liveTVRecorder = None
       self.currentChannel = None
       self.recordCurrent = False
+      self.recordingTimeout = 3
       
       self.verbose = True
       
@@ -114,7 +115,15 @@ class MythControl:
          
       # TODO Check that recorder is not slave backend - that is not supported
       
-      self.currentChannel = self.mythDB.getCardInput(self.liveTVRecorder).startchan
+      cardInput = self.mythDB.getCardInput(self.liveTVRecorder)
+      self.currentChannel = cardInput.startchan
+      # Check for invalid startchan.  Why is startchan invalid?  You'll have to ask
+      # the MythTV devs.  
+      if self.mythDB.getChannelByNum(self.currentChannel) is None:
+         channels = self.mythDB.getAllChannels()
+         channel = [i for i in channels if i.sourceid == cardInput.sourceid][0]
+         self.currentChannel = channel.channum
+         print self.currentChannel
          
       self.chain = 'live-' + socket.gethostname() + '-' + datetime.datetime.today().isoformat()
       if self.spawnLiveTV(self.currentChannel, callback):
@@ -192,7 +201,7 @@ class MythControl:
       start = datetime.datetime.today()
       while not response.startswith('1'):
          time.sleep(.5)
-         if datetime.datetime.today() - start > datetime.timedelta(seconds = 5):
+         if datetime.datetime.today() - start > datetime.timedelta(seconds = self.recordingTimeout):
             print 'Timed out waiting for recording to start'
             self.stopLiveTV()
             return False
