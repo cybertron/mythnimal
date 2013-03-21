@@ -25,6 +25,7 @@ from MythDBObjects import *
 class MythDB:
    # Schema versions above this have not been verified to work
    supportedSchemas = [1264, 1299]
+   disableWrites = True
    def __init__(self, host, user, password):
       self.engine = create_engine('mysql://' + user + ':' + password + '@' + host + '/mythconverg')
       
@@ -34,7 +35,7 @@ class MythDB:
       self.writes = False
       schemaVersion = int(self.getSetting('DBSchemaVer'))
       # If not a supported schema, don't write to DB to avoid possible corruption
-      if schemaVersion <= self.supportedSchemas[-1]:
+      if schemaVersion <= self.supportedSchemas[-1] and not self.disableWrites:
          self.writes = True
          
       # Ping the MySQL server periodically so our connection doesn't drop

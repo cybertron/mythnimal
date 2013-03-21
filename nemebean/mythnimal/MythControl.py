@@ -123,7 +123,6 @@ class MythControl:
          channels = self.mythDB.getAllChannels()
          channel = [i for i in channels if i.sourceid == cardInput.sourceid][0]
          self.currentChannel = channel.channum
-         print self.currentChannel
          
       self.chain = 'live-' + socket.gethostname() + '-' + datetime.datetime.today().isoformat()
       if self.spawnLiveTV(self.currentChannel, callback):

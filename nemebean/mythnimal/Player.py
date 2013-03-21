@@ -20,6 +20,7 @@ from PyQt4.QtCore import QObject, Qt, QTimer, pyqtSignal
 from PyQt4.QtGui import QDialog, QHBoxLayout, QProgressBar, QX11Info
 from VideoOutput import VideoOutput
 from MPlayer import MPlayer
+from VLC import VLC
 from MythDBObjects import Markup
 from Overlays import *
 from ChannelGuide import ChannelGuide
@@ -60,9 +61,8 @@ class Player(QObject):
          self.startAtEnd = True
       
       self.fullPath = os.path.join(settings['mythFileDir'], self.filename)
-      self.mplayer = MPlayer(self.videoOutput.videoLabel,
-                             self.fullPath,
-                             self.buildMPlayerOptions())
+      self.mplayer = VLC(self.videoOutput.videoLabel,
+                         self.fullPath)
       self.mplayer.foundAspect.connect(self.setAspect)
       self.mplayer.foundPosition.connect(self.updatePosition)
       self.mplayer.fileFinished.connect(self.end)
