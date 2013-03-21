@@ -81,7 +81,7 @@ class MPlayer(QObject):
       # The int may help with hypothetical future Windows compatibility
       wid = str(int(wid))
 
-      fullCommand = 'mplayer -slave -identify -quiet'
+      fullCommand = 'mplayer2 -slave -identify -quiet'
       fullCommand += ' -input nodefault-bindings:conf=' + os.devnull
       fullCommand += ' -wid ' + wid
       fullCommand += ' ' + self.extraOptions
@@ -150,6 +150,7 @@ class MPlayer(QObject):
             self.timer.start() # Do this before setting inPlayback to eliminate any chance of a race condition
             self.lastVolume = time.time() # Ditto
             self.inPlayback = True
+            time.sleep(.1) # Apparently MPlayer isn't quite ready for commands when this gets printed
             self.playbackStarted.emit()
 
          if line.find("Title: ") != -1:
@@ -232,7 +233,7 @@ class MPlayer(QObject):
       
       
    def startInfoProcess(self):
-      fullCommand = 'mplayer -identify -quiet -frames 0 -vo null -ao null ' + self.filename
+      fullCommand = 'mplayer2 -identify -quiet -frames 0 -vo null -ao null ' + self.filename
       self.infoProcess.start(fullCommand)
       
       

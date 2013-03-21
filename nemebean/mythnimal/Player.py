@@ -61,8 +61,11 @@ class Player(QObject):
          self.startAtEnd = True
       
       self.fullPath = os.path.join(settings['mythFileDir'], self.filename)
-      self.mplayer = VLC(self.videoOutput.videoLabel,
-                         self.fullPath)
+      #self.mplayer = VLC(self.videoOutput.videoLabel,
+      #                   self.fullPath)
+      self.mplayer = MPlayer(self.videoOutput.videoLabel,
+                             self.fullPath,
+                             self.buildMPlayerOptions())
       self.mplayer.foundAspect.connect(self.setAspect)
       self.mplayer.foundPosition.connect(self.updatePosition)
       self.mplayer.fileFinished.connect(self.end)
@@ -207,7 +210,6 @@ class Player(QObject):
                
          self.mplayer.seekRelative(int(float(self.bookmark) / self.mplayer.fps))
          self.bookmark = 0 # Don't do this again, even if we get the signal again
-         
          
    def updatePosition(self):
       self.seekOverlay.setTime(self.mplayer.position, self.mplayer.length)
