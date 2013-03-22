@@ -37,13 +37,7 @@ class ChannelGuide(QDialog):
       self.displayLength = datetime.timedelta(hours = 2)
       self.displayResolution = datetime.timedelta(minutes = 30)
       
-      self.channels = self.mythDB.getAllChannels()
-      def sortFunction(i):
-         return i.chanid
-      self.channels = sorted(self.channels, key = sortFunction)
-      
-      self.allPrograms = self.mythDB.getProgramSchedule(self.startTime,
-                                                        self.startTime + self.displayLength)
+      self.initChannelData()
       
       chan = [i for i in self.channels if i.channum == startChannel][0]
       self.selectedChannel = self.channels.index(chan)
@@ -51,6 +45,24 @@ class ChannelGuide(QDialog):
       self.setupUI()
       
       self.refreshDisplay()
+      
+      
+   def initChannelData(self):
+      self.channels = self.mythDB.getAllChannels()
+      def sortFunction(i):
+         return i.chanid
+      self.channels = sorted(self.channels, key = sortFunction)
+      
+      allPrograms = self.mythDB.getProgramSchedule(self.startTime,
+                                                   self.startTime + self.displayLength)
+      
+      self.program = dict()
+      for chan in self.channels:
+         selectedPrograms = [i for i in allPrograms if i.chanid == chan.chanid]
+         def sortFunction(i):
+            return i.starttime
+         selectedPrograms = sorted(selectedPrograms, key = sortFunction)
+         self.program[chan.chanid] = selectedPrograms
       
       
    def setupUI(self):
@@ -169,10 +181,7 @@ class ChannelGuide(QDialog):
       for rawI in range(startChanIndex, endChanIndex):
          wrappedI = rawI % len(self.channels)
          chanId = self.channels[wrappedI].chanid
-         selectedPrograms = [i for i in self.allPrograms if i.chanid == chanId]
-         def sortFunction(i):
-            return i.starttime
-         selectedPrograms = sorted(selectedPrograms, key = sortFunction)
+         selectedPrograms = self.program[chanId]
          
          channel = self.channels[wrappedI]
          text = str(channel.channum) + '\n' + channel.name

@@ -74,7 +74,9 @@ class Player(QObject):
       
       
    def buildMPlayerOptions(self):
-      opts = '-osdlevel 0 '#-cache 25000 -cache-min 1 '
+      opts = '-osdlevel 0 '
+      # This causes issues seeking in files that are recording
+      #opts += '-cache 25000 -cache-min 1 '
       if settings['deinterlace']:
          opts += '-vf yadif '
       opts += '-framedrop ' # yadif can have problems keeping up on HD content
@@ -170,6 +172,7 @@ class Player(QObject):
          self.seekOverlay.hide()
          self.messageOverlay.hide()
          self.channelOverlay.hide()
+         self.guide.hide()
          self.mythDB.saveBookmark(self.mplayer, eof)
          self.ended = True
          if self.emitFinished:
@@ -188,7 +191,6 @@ class Player(QObject):
       self.starts = skips[0]
       self.ends = skips[1]
       self.nextSkip = 0
-      
       
       
    def setAspect(self):
