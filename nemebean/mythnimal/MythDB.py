@@ -165,9 +165,14 @@ class MythDB:
                                         .all()
                                         
                                         
-   def getProgramSchedule(self, chanId, startTime, endTime):
-      return self.session.query(ProgramSchedule).filter(ProgramSchedule.chanid == chanId) \
-                                                .filter(ProgramSchedule.endtime > startTime) \
+   def getProgramSchedule(self, startTime, endTime, chanId = None):
+      if chanId is not None:
+         return self.session.query(ProgramSchedule).filter(ProgramSchedule.chanid == chanId) \
+                                                   .filter(ProgramSchedule.endtime > startTime) \
+                                                   .filter(ProgramSchedule.starttime < endTime) \
+                                                   .order_by(ProgramSchedule.chanid) \
+                                                   .all()
+      return self.session.query(ProgramSchedule).filter(ProgramSchedule.endtime > startTime) \
                                                 .filter(ProgramSchedule.starttime < endTime) \
                                                 .order_by(ProgramSchedule.chanid) \
                                                 .all()

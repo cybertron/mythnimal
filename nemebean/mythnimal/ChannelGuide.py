@@ -35,8 +35,15 @@ class ChannelGuide(QDialog):
          self.startTime = self.startTime.replace(minute = 0)
       self.selectedStartTime = self.startTime
       self.displayLength = datetime.timedelta(hours = 2)
+      self.displayResolution = datetime.timedelta(minutes = 30)
       
       self.channels = self.mythDB.getAllChannels()
+      def sortFunction(i):
+         return i.chanid
+      self.channels = sorted(self.channels, key = sortFunction)
+      
+      self.allPrograms = self.mythDB.getProgramSchedule(self.startTime,
+                                                        self.startTime + self.displayLength)
       
       chan = [i for i in self.channels if i.channum == startChannel][0]
       self.selectedChannel = self.channels.index(chan)
@@ -139,20 +146,38 @@ class ChannelGuide(QDialog):
       QWidget().setLayout(self.channelLayout)
       self.channelLayout = QVBoxLayout(self.channelWidget)
       
-      # Don't use rawI directly
-      for rawI in range(startChanIndex, endChanIndex):
-         wrappedI = rawI % len(self.channels)
-         chanId = self.channels[wrappedI].chanid
-         selectedPrograms = self.mythDB.getProgramSchedule(chanId, self.startTime, endTime)
-         
+      def newGuideLine(text):
          layout = QHBoxLayout()
-         self.channelLayout.addLayout(layout)
-         newItem = GuideItem(str(self.channels[wrappedI].channum))
+         
+         newItem = GuideItem(text)
          newItem.setMaximumWidth(125)
          newItem.setMinimumWidth(125)
          newItem.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Ignored)
          newItem.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
          layout.addWidget(newItem)
+         
+         return layout
+         
+      layout = newGuideLine('')
+      self.channelLayout.addLayout(layout)
+      currTime = self.startTime
+      while currTime < self.startTime + self.displayLength:
+         layout.addWidget(GuideItem(text = currTime.time().strftime('%I:%M %p')))
+         currTime += self.displayResolution
+      
+      # Don't use rawI directly
+      for rawI in range(startChanIndex, endChanIndex):
+         wrappedI = rawI % len(self.channels)
+         chanId = self.channels[wrappedI].chanid
+         selectedPrograms = [i for i in self.allPrograms if i.chanid == chanId]
+         def sortFunction(i):
+            return i.starttime
+         selectedPrograms = sorted(selectedPrograms, key = sortFunction)
+         
+         channel = self.channels[wrappedI]
+         text = str(channel.channum) + '\n' + channel.name
+         layout = newGuideLine(text)
+         self.channelLayout.addLayout(layout)
          
          if len(selectedPrograms) == 0:
             newItem = GuideItem('[No data]')
@@ -160,8 +185,6 @@ class ChannelGuide(QDialog):
                newItem.select()
             layout.addWidget(newItem, 100)
          
-         if wrappedI == self.selectedChannel:
-            print
          for j in selectedPrograms:
             start = j.starttime
             if start < self.startTime:
@@ -171,8 +194,6 @@ class ChannelGuide(QDialog):
                end = self.startTime + self.displayLength
             duration = end - start
             newItem = GuideItem(program = j)
-            if wrappedI == self.selectedChannel:
-               print start, self.selectedStartTime, end
             if wrappedI == self.selectedChannel and start <= self.selectedStartTime and end > self.selectedStartTime:
                self.select(newItem)
                self.selectedStartTime = start
