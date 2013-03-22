@@ -35,6 +35,7 @@ class MainForm(QDialog):
    mythControl = None
    def __init__(self, parent = None):
       QDialog.__init__(self, parent)
+      self.previousChannel = None
       
       self.setupUI()
       
@@ -281,6 +282,7 @@ class MainForm(QDialog):
          
    def changeChannel(self, channel):
       self.messageDialog.showMessage('Buffering...')
+      self.previousChannel = self.mythControl.currentChannel
       filename = self.mythControl.changeChannel(channel, qApp.processEvents)
       # This is highly unlikely, but possible
       if filename is None:
@@ -296,6 +298,9 @@ class MainForm(QDialog):
          self.player = Player(playerX, playerY, filename, self.mythDB, startAtEnd)
          self.player.finished.connect(self.activateWindow)
          if live:
+            if self.previousChannel is None:
+               self.previousChannel = self.mythControl.currentChannel
+            self.player.previousChannel = self.previousChannel
             self.player.finished.connect(self.playerStopped)
             self.player.channelChange.connect(self.changeChannel)
             self.player.seekedPastStart.connect(self.playPreviousInChain)

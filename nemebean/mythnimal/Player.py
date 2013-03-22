@@ -41,6 +41,7 @@ class Player(QObject):
       self.lastPosition = 0
       self.emitFinished = True
       self.currentChannel = None
+      self.previousChannel = None
       self.startAtEnd = startAtEnd
       
       self.getSkipList()
@@ -73,7 +74,7 @@ class Player(QObject):
       
       
    def buildMPlayerOptions(self):
-      opts = '-osdlevel 0 -cache 25000 -cache-min 1 '
+      opts = '-osdlevel 0 '#-cache 25000 -cache-min 1 '
       if settings['deinterlace']:
          opts += '-vf yadif '
       opts += '-framedrop ' # yadif can have problems keeping up on HD content
@@ -123,6 +124,9 @@ class Player(QObject):
       elif key == Qt.Key_Enter or key == Qt.Key_Return:
          channel = self.channelOverlay.message.text()
          self.changeChannel(channel)
+      elif key == Qt.Key_Backspace:
+         if self.previousChannel is not None:
+            self.changeChannel(self.previousChannel)
       elif key == Qt.Key_D:
          settings['deinterlace'] = not settings['deinterlace']
          self.setBookmarkSeconds(self.mplayer.position)
@@ -204,8 +208,9 @@ class Player(QObject):
          
       if self.bookmark > 0:
          # Ignore commercial skips prior to the bookmark
-         if len(self.starts) > 0:
-            while self.starts[self.nextSkip] < self.bookmark:
+         startLen = len(self.starts)
+         if startLen > 0:
+            while self.nextSkip < startLen and self.starts[self.nextSkip] < self.bookmark:
                self.nextSkip += 1
                
          self.mplayer.seekRelative(int(float(self.bookmark) / self.mplayer.fps))
