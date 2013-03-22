@@ -11,6 +11,7 @@ If you're feeling adventurous and want to try using a frontend that is still und
 1. It needs access to both your Myth database and your Myth recordings directory.  This frontend _cannot_ stream from the Myth backend at this time, so it needs direct access to the files.  You will be prompted at the first run to provide the necessary paths/information.
 2. Keybindings are largely the same as regular Myth, except that space is pause and the program guide is g.
 3. This frontend uses MPlayer to play recordings, so you will need that installed, along with Python, Qt4, PyQt4, and SQLAlchemy.
-4. Another reminder: This is in very early development right now, so the code is going to be in flux for a while.  What gets checked in to the Git repo _probably_ works for me, but no guarantees.
+4. Mythnimal is also capable of using MPlayer2 as a video player, and I actually recommend using that instead because it seems to work better with HD content.  You can change the video player by altering the MPlayer command in the settings screen.
+5. Another reminder: This is in very early development right now, so the code is going to be in flux for a while.  What gets checked in to the Git repo _probably_ works for me, but no guarantees.
 
 Assuming all goes well with this project, at some point I will probably write something up on the GitHub wiki for it.  Until then, this is all the documentation you're getting. ;-)
