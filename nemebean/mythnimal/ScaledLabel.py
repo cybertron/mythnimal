@@ -27,20 +27,20 @@ class ScaledLabel(QLabel):
       
       self.scale = scale
       self.scaledHeight = self.calcHeight()
-      self.extraStyle = ''
+      self.setStyle('')
       
    def resizeEvent(self, event):
-      # .03 seems to be a good default
+      oldHeight = self.scaledHeight
       self.scaledHeight = self.calcHeight()
-      #print self.scaledHeight
-      self.setMinimumHeight(self.scaledHeight * 1.1)
-      self.setStyle(self.extraStyle)
+      # It can be slow to setStyle on every resizeEvent
+      if oldHeight != self.scaledHeight:
+         self.setMinimumHeight(self.scaledHeight * 1.1)
+         self.setStyle(self.extraStyle)
       
    def calcHeight(self):
+      # .03 seems to be a good default
       retval = self.formHeight * .03 * (self.scale / fullScale)
-      if self.scale == 1.5:
-         print retval
-      return retval if retval > 0 else 20
+      return int(retval) if retval > 0 else 20
       
       
    def setStyle(self, style):
