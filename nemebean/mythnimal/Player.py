@@ -37,12 +37,13 @@ class Player(QObject):
       
       self.filename = filename
       self.mythDB = mythDB
+      self.startAtEnd = startAtEnd
       self.ended = False
       self.lastPosition = 0
       self.emitFinished = True
       self.currentChannel = None
       self.previousChannel = None
-      self.startAtEnd = startAtEnd
+      self.guide = None
       
       self.getSkipList()
       self.bookmark = self.mythDB.bookmark(self.filename)
@@ -172,7 +173,8 @@ class Player(QObject):
          self.seekOverlay.hide()
          self.messageOverlay.hide()
          self.channelOverlay.hide()
-         self.guide.hide()
+         if self.guide:
+            self.guide.hide()
          self.mythDB.saveBookmark(self.mplayer, eof)
          self.ended = True
          if self.emitFinished:
