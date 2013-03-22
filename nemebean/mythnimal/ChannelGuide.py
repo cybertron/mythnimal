@@ -37,7 +37,10 @@ class ChannelGuide(QDialog):
       self.displayLength = datetime.timedelta(hours = 2)
       self.displayResolution = datetime.timedelta(minutes = 30)
       
-      self.initChannelData()
+      self.channels = self.mythDB.getAllChannels()
+      def sortByChanid(i):
+         return i.chanid
+      self.channels = sorted(self.channels, key = sortByChanid)
       
       chan = [i for i in self.channels if i.channum == startChannel][0]
       self.selectedChannel = self.channels.index(chan)
@@ -45,24 +48,6 @@ class ChannelGuide(QDialog):
       self.setupUI()
       
       self.refreshDisplay()
-      
-      
-   def initChannelData(self):
-      self.channels = self.mythDB.getAllChannels()
-      def sortFunction(i):
-         return i.chanid
-      self.channels = sorted(self.channels, key = sortFunction)
-      
-      allPrograms = self.mythDB.getProgramSchedule(self.startTime,
-                                                   self.startTime + self.displayLength)
-      
-      self.program = dict()
-      for chan in self.channels:
-         selectedPrograms = [i for i in allPrograms if i.chanid == chan.chanid]
-         def sortFunction(i):
-            return i.starttime
-         selectedPrograms = sorted(selectedPrograms, key = sortFunction)
-         self.program[chan.chanid] = selectedPrograms
       
       
    def setupUI(self):
@@ -180,10 +165,17 @@ class ChannelGuide(QDialog):
       # Don't use rawI directly
       for rawI in range(startChanIndex, endChanIndex):
          wrappedI = rawI % len(self.channels)
-         chanId = self.channels[wrappedI].chanid
-         selectedPrograms = self.program[chanId]
-         
          channel = self.channels[wrappedI]
+         chanId = channel.chanid
+         
+         selectedPrograms = self.mythDB.getProgramSchedule(self.startTime,
+                                                           self.startTime + self.displayLength,
+                                                           chanId)
+         
+         def sortByStarttime(i):
+            return i.starttime
+         selectedPrograms = sorted(selectedPrograms, key = sortByStarttime)
+         
          text = str(channel.channum) + '\n' + channel.name
          layout = newGuideLine(text)
          self.channelLayout.addLayout(layout)
