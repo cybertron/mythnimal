@@ -18,6 +18,7 @@
 # Copyright 2012, 2013 Ben Nemec
 # @End License@
 
+from Settings import settings
 from PyQt4.QtCore import *
 import time, sys, os
 
@@ -81,7 +82,8 @@ class MPlayer(QObject):
       # The int may help with hypothetical future Windows compatibility
       wid = str(int(wid))
 
-      fullCommand = 'mplayer2 -slave -identify -quiet'
+      fullCommand = settings['mplayer']
+      fullCommand += ' -slave -identify -quiet'
       fullCommand += ' -input nodefault-bindings:conf=' + os.devnull
       fullCommand += ' -wid ' + wid
       fullCommand += ' ' + self.extraOptions
@@ -233,7 +235,7 @@ class MPlayer(QObject):
       
       
    def startInfoProcess(self):
-      fullCommand = 'mplayer2 -identify -quiet -frames 0 -vo null -ao null ' + self.filename
+      fullCommand = settings['mplayer'] + ' -identify -quiet -frames 0 -vo null -ao null ' + self.filename
       self.infoProcess.start(fullCommand)
       
       

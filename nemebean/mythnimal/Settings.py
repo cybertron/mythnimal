@@ -29,6 +29,7 @@ class Settings:
       self.values['deinterlace'] = True
       self.values['bufferTime'] = 5
       self.values['lengthUpdateInterval'] = 3000
+      self.values['mplayer'] = 'mplayer'
       
       self.configHandler = ConfigHandler('mythnimal')
       self.configHandler.loadDict('settings', self.values)

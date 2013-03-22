@@ -137,6 +137,9 @@ class MainForm(QDialog):
       self.miscGroup.setLayout(self.miscGroupLayout)
       self.settingsInputLayout.addWidget(self.miscGroup)
       
+      self.mplayerInput = QLineEdit()
+      self.miscGroupLayout.addWidget(PairWidget('MPlayer Command', self.mplayerInput))
+      
       self.bufferTimeInput = QSpinBox()
       self.miscGroupLayout.addWidget(PairWidget('Buffer Time', self.bufferTimeInput))
       
@@ -238,6 +241,7 @@ class MainForm(QDialog):
       self.dbUserInput.setText(settings['dbUser'])
       self.dbPasswordInput.setText(settings['dbPassword'])
       self.fileDirInput.setText(settings['mythFileDir'])
+      self.mplayerInput.setText(settings['mplayer'])
       self.bufferTimeInput.setValue(settings['bufferTime'])
       self.tabs.setCurrentWidget(self.settingsTab)
    
@@ -247,6 +251,7 @@ class MainForm(QDialog):
       settings['dbUser'] = str(self.dbUserInput.text())
       settings['dbPassword'] = str(self.dbPasswordInput.text())
       settings['mythFileDir'] = str(self.fileDirInput.text())
+      settings['mplayer'] = str(self.mplayerInput.text())
       settings['bufferTime'] = self.bufferTimeInput.value()
       settings.save()
       if settings['firstRun']:
