@@ -159,7 +159,9 @@ class ChannelGuide(QDialog):
       self.channelLayout.addLayout(layout)
       currTime = self.startTime
       while currTime < self.startTime + self.displayLength:
-         layout.addWidget(GuideItem(text = currTime.time().strftime('%I:%M %p')))
+         newItem = GuideItem(text = currTime.time().strftime('%I:%M %p'))
+         newItem.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+         layout.addWidget(newItem)
          currTime += self.displayResolution
       
       # Don't use rawI directly
