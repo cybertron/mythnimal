@@ -189,9 +189,7 @@ class Player(QObject):
       
       
    def getSkipList(self):
-      skips = self.mythDB.skipList(self.filename)
-      self.starts = skips[0]
-      self.ends = skips[1]
+      (self.starts, self.ends, self.mythRate) = self.mythDB.skipList(self.filename)
       self.nextSkip = 0
       
       
@@ -205,19 +203,42 @@ class Player(QObject):
          self.videoOutput.resize(1, 1)
          self.videoOutput.resize(width, height)
          
+   
+   def commStartTime(self, i = None):
+      """ Myth sometimes reports a different framerate than MPlayer, and that
+          screws up our comm skip calculations.  Use this function instead of
+          looking at self.starts directly to get comm skip times.
+          
+          This function returns the start in seconds, since that's what we care about.
+      """
+      if i is None:
+         i = self.nextSkip
+      print i
+      return float(self.starts[i]) / float(self.mythRate)
+      
+   def commEndTime(self, i = None):
+      """ Same as commStartTime, but for end times. """
+      if i is None:
+         i = self.nextSkip
+      return float(self.ends[i]) / float(self.mythRate)
+      
+   def bookmarkTime(self):
+      """ Same as commStartTime, but for the bookmark. """
+      return float(self.bookmark) / float(self.mythRate)
+      
    def playbackStarted(self):
       if self.startAtEnd:
          self.setBookmarkSeconds(self.mplayer.length - 5)
          self.startAtEnd = False
          
-      if self.bookmark > 0:
+      if self.bookmarkTime() > 0:
          # Ignore commercial skips prior to the bookmark
          startLen = len(self.starts)
          if startLen > 0:
-            while self.nextSkip < startLen and self.starts[self.nextSkip] < self.bookmark:
+            while self.nextSkip < startLen and self.commStartTime() < self.bookmarkTime():
                self.nextSkip += 1
                
-         self.mplayer.seekRelative(int(float(self.bookmark) / self.mplayer.fps))
+         self.mplayer.seekRelative(int(self.bookmarkTime()))
          self.bookmark = 0 # Don't do this again, even if we get the signal again
          
    def updatePosition(self):
@@ -226,8 +247,8 @@ class Player(QObject):
          self.lastPosition = self.mplayer.length
       
       if self.nextSkip < len(self.starts):
-         start = float(self.starts[self.nextSkip]) / self.mplayer.fps
-         end = float(self.ends[self.nextSkip]) / self.mplayer.fps
+         start = self.commStartTime()
+         end = self.commEndTime()
          if self.mplayer.position > start:
             seekAmount = end - self.mplayer.position
             self.seek(seekAmount)

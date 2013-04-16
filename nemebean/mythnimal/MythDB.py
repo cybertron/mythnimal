@@ -64,10 +64,14 @@ class MythDB:
       program = self.getProgram(filename)
       starts = self.getMarkup(program, 4)
       ends = self.getMarkup(program, 5)
+      framerate = self.getMarkup(program, 32)
       
       startret = [i.mark for i in starts]
       endret = [i.mark for i in ends]
-      return (startret, endret)
+      # Myth stores its framerate in multiples of 1000
+      fpsMult = 1000
+      framerate = float(framerate[0].data) / float(fpsMult)
+      return (startret, endret, framerate)
       
       
    def programInUse(self, program):

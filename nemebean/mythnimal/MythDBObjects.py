@@ -49,15 +49,21 @@ class Markup(Base):
    starttime = Column(DateTime, primary_key=True)
    mark = Column(Integer, primary_key=True)
    type = Column(Integer, primary_key=True)
+   data = Column(Integer)
    
-   def __init__(self, program, mark, type):
+   def __init__(self, program, mark, type, data = None):
       self.chanid = program.chanid
       self.starttime = program.starttime
       self.mark = mark
       self.type = type
+      self.data = data
       
    def __repr__(self):
-      return 'Markup(' + str(self.chanid) + ', ' + str(self.starttime) + ', ' + str(self.mark) + ', ' + str(self.type) + ')'
+      return ('Markup(' + str(self.chanid) + ', ' +
+                          str(self.starttime) + ', ' +
+                          str(self.mark) + ', ' +
+                          str(self.type) + ', ' +
+                          str(self.data) + ')')
       
       
 class Settings(Base):
