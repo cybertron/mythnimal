@@ -130,6 +130,8 @@ class Player(QObject):
       elif key == Qt.Key_Backspace:
          if self.previousChannel is not None:
             self.changeChannel(self.previousChannel)
+         elif self.currentChannel is None:
+            self.seekToLastCommercialStart()
       elif key == Qt.Key_D:
          settings['deinterlace'] = not settings['deinterlace']
          self.setBookmarkSeconds(self.mplayer.position)
@@ -213,7 +215,6 @@ class Player(QObject):
       """
       if i is None:
          i = self.nextSkip
-      print i
       return float(self.starts[i]) / float(self.mythRate)
       
    def commEndTime(self, i = None):
@@ -254,6 +255,12 @@ class Player(QObject):
             self.seek(seekAmount)
             self.nextSkip += 1
             self.showMessage('Skipped ' + MPlayer.formatTime(int(end - start)))
+            
+   def seekToLastCommercialStart(self):
+      previous = self.nextSkip - 1
+      if previous >= 0 and previous < len(self.starts):
+         seekAmount = self.commStartTime(previous) - self.mplayer.position
+         self.seek(seekAmount)
          
          
    def createOverlays(self):

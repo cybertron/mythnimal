@@ -113,6 +113,7 @@ class MPlayer(QObject):
       
       
    def seekRelative(self, amount):
+      print 'Seeking:', amount
       self.process.write('pausing_keep_force seek ' + str(amount) + '\n')
 
 
