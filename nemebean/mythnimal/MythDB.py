@@ -64,14 +64,19 @@ class MythDB:
       program = self.getProgram(filename)
       starts = self.getMarkup(program, 4)
       ends = self.getMarkup(program, 5)
-      framerate = self.getMarkup(program, 32)
+      framerate = self.framerate(program)
       
       startret = [i.mark for i in starts]
       endret = [i.mark for i in ends]
+      
+      return (startret, endret, framerate)
+      
+   def framerate(self, program):
+      retval = self.getMarkup(program, 32)
       # Myth stores its framerate in multiples of 1000
       fpsMult = 1000
-      framerate = float(framerate[0].data) / float(fpsMult)
-      return (startret, endret, framerate)
+      retval = float(retval[0].data) / float(fpsMult)
+      return retval
       
       
    def programInUse(self, program):
@@ -96,7 +101,7 @@ class MythDB:
    def saveBookmark(self, mplayer, eof):
       program = self.getProgram(os.path.basename(mplayer.filename))
       bookmark = self.getMarkup(program, 2)
-      newMark = int(float(mplayer.position) * mplayer.fps)
+      newMark = int(float(mplayer.position) * self.framerate(program))
       if eof:
          newMark = 0
       if len(bookmark) > 0:
