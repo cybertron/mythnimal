@@ -206,26 +206,28 @@ class Player(QObject):
          self.videoOutput.resize(width, height)
          
    
-   def commStartTime(self, i = None):
+   def getTime(self, time):
       """ Myth sometimes reports a different framerate than MPlayer, and that
-          screws up our comm skip calculations.  Use this function instead of
-          looking at self.starts directly to get comm skip times.
-          
-          This function returns the start in seconds, since that's what we care about.
+          screws up our calculations.  Use this function to get the correct
+          rate-adjusted time.
       """
+      rate = self.mythRate
+      if rate is None:
+         return float(time) / float(self.mplayer.fps)
+      return float(time) / float(self.mythRate)
+      
+   def commStartTime(self, i = None):
       if i is None:
          i = self.nextSkip
-      return float(self.starts[i]) / float(self.mythRate)
+      return self.getTime(self.starts[i])
       
    def commEndTime(self, i = None):
-      """ Same as commStartTime, but for end times. """
       if i is None:
          i = self.nextSkip
-      return float(self.ends[i]) / float(self.mythRate)
+      return self.getTime(self.ends[i])
       
    def bookmarkTime(self):
-      """ Same as commStartTime, but for the bookmark. """
-      return float(self.bookmark) / float(self.mythRate)
+      return self.getTime(self.bookmark)
       
    def playbackStarted(self):
       if self.startAtEnd:
