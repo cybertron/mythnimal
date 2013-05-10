@@ -199,7 +199,10 @@ class MainForm(QDialog):
       
       
    def displayProgramDetails(self):
-      details = self.mythDB.getProgram(self.programMenu.selectedItem().id)
+      selected = self.programMenu.selectedItem()
+      if selected is None:
+         return
+      details = self.mythDB.getProgram(selected.id)
       if details is None:
          self.refreshProgramList()
          return
