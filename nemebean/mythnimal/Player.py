@@ -206,15 +206,20 @@ class Player(QObject):
          self.videoOutput.resize(width, height)
          
    
-   def getTime(self, time):
+   def getRate(self):
       """ Myth sometimes reports a different framerate than MPlayer, and that
-          screws up our calculations.  Use this function to get the correct
-          rate-adjusted time.
+          screws up our calculations.  Use this function to select the best
+          available rate.
       """
       rate = self.mythRate
       if rate is None:
-         return float(time) / float(self.mplayer.fps)
-      return float(time) / float(self.mythRate)
+         return self.mplayer.fps
+      return self.mythRate
+   
+   
+   def getTime(self, time):
+      return float(time) / float(self.getRate())
+
       
    def commStartTime(self, i = None):
       if i is None:
@@ -303,5 +308,5 @@ class Player(QObject):
       
       
    def setBookmarkSeconds(self, seconds):
-      self.bookmark = int(float(seconds) * self.mplayer.fps)
+      self.bookmark = int(float(seconds) * self.getRate())
 
