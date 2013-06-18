@@ -67,6 +67,7 @@ class MenuWidget(QScrollArea):
       else:
          if self.selectedIndex >= len(self.items):
             self.selectedIndex = len(self.items) - 1
+         self.updateSelected()
          self.selectionChanged.emit(self.selectedIndex)
       item.setParent(None) # Should remove the last reference and trigger deletion
       
