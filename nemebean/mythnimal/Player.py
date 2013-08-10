@@ -44,6 +44,7 @@ class Player(QObject):
       self.currentChannel = None
       self.previousChannel = None
       self.guide = None
+      self.commskip = True
       
       self.getSkipList()
       self.bookmark = self.mythDB.bookmark(self.filename)
@@ -140,6 +141,12 @@ class Player(QObject):
          else:
             self.showMessage('Deinterlacing Off')
          self.startMPlayer()
+      elif key == Qt.Key_S:
+         self.commskip = not self.commskip
+         if self.commskip:
+            self.showMessage('Skipping Commercials')
+         else:
+            self.showMessage('Not Skipping Commercials')
       elif key == Qt.Key_G:
          if self.currentChannel is not None:
             self.guide = ChannelGuide(self.currentChannel, self.mythDB, self.videoOutput)
@@ -258,10 +265,13 @@ class Player(QObject):
          start = self.commStartTime()
          end = self.commEndTime()
          if self.mplayer.position > start:
-            seekAmount = end - self.mplayer.position
-            self.seek(seekAmount)
+            message = 'Would have skipped %s'
+            if self.commskip:
+               seekAmount = end - self.mplayer.position
+               self.seek(seekAmount)
+               message = 'Skipped %s'
             self.nextSkip += 1
-            self.showMessage('Skipped ' + MPlayer.formatTime(int(end - start)))
+            self.showMessage(message % MPlayer.formatTime(int(end - start)))
             
    def seekToLastCommercialStart(self):
       previous = self.nextSkip - 1
