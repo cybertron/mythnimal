@@ -82,6 +82,8 @@ class Player(QObject):
       if settings['deinterlace']:
          opts += '-vf yadif '
       opts += '-framedrop ' # yadif can have problems keeping up on HD content
+      # TODO: Make language configurable
+      opts += '-alang eng '
       return opts
       
       
