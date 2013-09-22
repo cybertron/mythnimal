@@ -36,11 +36,11 @@ class ChannelGuide(QDialog):
       self.selectedStartTime = self.startTime
       self.displayLength = datetime.timedelta(hours = 2)
       self.displayResolution = datetime.timedelta(minutes = 30)
+      self.itemCache = {}
+      self.lineLayouts = []
       
       self.channels = self.mythDB.getAllChannels()
-      def sortByChanid(i):
-         return i.chanid
-      self.channels = sorted(self.channels, key = sortByChanid)
+      self.channels = sorted(self.channels, key = lambda x: x.chanid)
       
       chan = [i for i in self.channels if i.channum == startChannel][0]
       self.selectedChannel = self.channels.index(chan)
@@ -140,18 +140,29 @@ class ChannelGuide(QDialog):
       
       endTime = self.startTime + self.displayLength
       
+      # setVisible is surprisingly slow, so don't do it unnecessarily
+      self.needToHide = set()
+      # A widget is owned by its parent layout, so if we don't remove them from the layout
+      # first they will all be deleted, which breaks our caching
+      for i in self.lineLayouts:
+         while i.count():
+            self.needToHide.add(i.takeAt(0).widget())
+      self.lineLayouts = []
       QWidget().setLayout(self.channelLayout)
       self.channelLayout = QVBoxLayout(self.channelWidget)
       
       def newGuideLine(text):
          layout = QHBoxLayout()
          
-         newItem = GuideItem(text)
-         newItem.setMaximumWidth(125)
-         newItem.setMinimumWidth(125)
-         newItem.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Ignored)
-         newItem.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+         def callback(newItem):
+            newItem.setMaximumWidth(125)
+            newItem.setMinimumWidth(125)
+            newItem.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Ignored)
+            newItem.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+         newItem = self.getItem(text = text, callback = callback)
+         
          layout.addWidget(newItem)
+         self.lineLayouts.append(layout)
          
          return layout
          
@@ -159,8 +170,9 @@ class ChannelGuide(QDialog):
       self.channelLayout.addLayout(layout)
       currTime = self.startTime
       while currTime < self.startTime + self.displayLength:
-         newItem = GuideItem(text = currTime.time().strftime('%I:%M %p'))
-         newItem.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+         timeText = currTime.time().strftime('%I:%M %p')
+         callback = lambda x: x.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+         newItem = self.getItem(text = timeText, callback = callback)
          layout.addWidget(newItem)
          currTime += self.displayResolution
       
@@ -183,7 +195,7 @@ class ChannelGuide(QDialog):
          self.channelLayout.addLayout(layout)
          
          if len(selectedPrograms) == 0:
-            newItem = GuideItem('[No data]')
+            newItem = self.getItem(text = '[No data]')
             if wrappedI == self.selectedChannel:
                newItem.select()
             layout.addWidget(newItem, 100)
@@ -196,11 +208,15 @@ class ChannelGuide(QDialog):
             if end > self.startTime + self.displayLength:
                end = self.startTime + self.displayLength
             duration = end - start
-            newItem = GuideItem(program = j)
+            newItem = self.getItem(program = j)
+            newItem.deselect()
             if wrappedI == self.selectedChannel and start <= self.selectedStartTime and end > self.selectedStartTime:
                self.select(newItem)
                self.selectedStartTime = start
             layout.addWidget(newItem, int(duration.total_seconds() / self.displayLength.total_seconds() * 100))
+            
+      for i in self.needToHide:
+         i.setVisible(False)
             
          
    def select(self, item):
@@ -209,6 +225,32 @@ class ChannelGuide(QDialog):
       self.programTitle.setText(item.program.title)
       self.programSubtitle.setText(item.program.subtitle)
       self.programDescription.setText(item.program.description)
+      
+      
+   def getItem(self, text = None, program = None, callback = lambda x: None):
+      def doReturn(retval):
+         # This may unnecessarily call setVisible on a second retrieval of an item, but
+         # that won't happen often so it's good enough.
+         if retval not in self.needToHide:
+            retval.setVisible(True)
+         self.needToHide.discard(retval)
+         return retval
+         
+      if program is not None:
+         if program in self.itemCache:
+            return doReturn(self.itemCache[program])
+         newItem = GuideItem(program = program)
+         callback(newItem)
+         self.itemCache[program] = newItem
+      elif text is not None:
+         if text in self.itemCache:
+            return doReturn(self.itemCache[text])
+         newItem = GuideItem(text = text)
+         callback(newItem)
+         self.itemCache[text] = newItem
+      else:
+         raise Exception('Neither text nor program passed to getItem')
+      return newItem
                
             
             
