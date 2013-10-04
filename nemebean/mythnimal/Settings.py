@@ -21,8 +21,8 @@ from ConfigHandler import ConfigHandler
 class Settings:
    def __init__(self):
       self.values = dict()
-      self.values['mythFileDir'] = '/mnt/tv/tv'
-      self.values['dbHost'] = 'torch'
+      self.values['mythFileDir'] = '/'
+      self.values['dbHost'] = ''
       self.values['dbUser'] = 'mythtv'
       self.values['dbPassword'] = 'mythtv'
       self.values['firstRun'] = True

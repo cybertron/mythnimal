@@ -124,13 +124,13 @@ class MainForm(QDialog):
       self.settingsInputLayout.addWidget(self.dbGroup)
       
       self.dbHostInput = QLineEdit()
-      self.dbGroupLayout.addWidget(PairWidget('Hostname', self.dbHostInput))
+      self.dbGroupLayout.addWidget(PairWidget('DB Hostname', self.dbHostInput))
       self.dbUserInput = QLineEdit()
-      self.dbGroupLayout.addWidget(PairWidget('Username', self.dbUserInput))
+      self.dbGroupLayout.addWidget(PairWidget('DB Username', self.dbUserInput))
       self.dbPasswordInput = QLineEdit()
-      self.dbGroupLayout.addWidget(PairWidget('Password', self.dbPasswordInput))
+      self.dbGroupLayout.addWidget(PairWidget('DB Password', self.dbPasswordInput))
       self.fileDirInput = QLineEdit()
-      self.dbGroupLayout.addWidget(PairWidget('Myth File Directory', self.fileDirInput))
+      self.dbGroupLayout.addWidget(PairWidget('Local Myth File Directory', self.fileDirInput))
       
       self.miscGroup = QGroupBox('Miscellaneous')
       self.miscGroupLayout = QVBoxLayout()
@@ -239,13 +239,16 @@ class MainForm(QDialog):
          print 'Unimplemented main menu item selected'
          
          
-   def showSettingsTab(self):
+   def populateSettings(self):
       self.dbHostInput.setText(settings['dbHost'])
       self.dbUserInput.setText(settings['dbUser'])
       self.dbPasswordInput.setText(settings['dbPassword'])
       self.fileDirInput.setText(settings['mythFileDir'])
       self.mplayerInput.setText(settings['mplayer'])
       self.bufferTimeInput.setValue(settings['bufferTime'])
+      
+   def showSettingsTab(self):
+      self.populateSettings()
       self.tabs.setCurrentWidget(self.settingsTab)
    
    
@@ -276,6 +279,7 @@ class MainForm(QDialog):
    def initialSetup(self):
       self.initConfig = QDialog()
       self.initConfig.setLayout(self.settingsLayout)
+      self.populateSettings()
       self.initConfig.exec_()
       self.settingsTab.setLayout(self.settingsLayout)
       settings['firstRun'] = False
