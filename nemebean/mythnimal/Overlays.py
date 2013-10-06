@@ -28,7 +28,11 @@ class Overlay(QDialog):
       
       self.keyPressHandler = keyPressHandler
       
-      self.setWindowFlags(Qt.Dialog | Qt.FramelessWindowHint)
+      self.setWindowFlags(Qt.Dialog |
+                          Qt.FramelessWindowHint |
+                          Qt.WindowStaysOnTopHint |
+                          Qt.X11BypassWindowManagerHint)
+      self.setFocusPolicy(Qt.NoFocus)
       # Causes issues in some non-compositing WM's (notably Fluxbox)
       if QX11Info.isCompositingManagerRunning():
          self.setAttribute(Qt.WA_TranslucentBackground)
@@ -40,7 +44,6 @@ class Overlay(QDialog):
       
    def showTimed(self, interval = 2000):
       self.show()
-      self.raise_()
       self.timer.start(interval)
       
    def keyPressEvent(self, event):
