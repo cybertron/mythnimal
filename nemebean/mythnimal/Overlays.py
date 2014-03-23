@@ -30,8 +30,7 @@ class Overlay(QDialog):
       
       self.setWindowFlags(Qt.Dialog |
                           Qt.FramelessWindowHint |
-                          Qt.WindowStaysOnTopHint |
-                          Qt.X11BypassWindowManagerHint)
+                          Qt.WindowStaysOnTopHint)
       self.setFocusPolicy(Qt.NoFocus)
       # Causes issues in some non-compositing WM's (notably Fluxbox)
       if QX11Info.isCompositingManagerRunning():
