@@ -28,7 +28,10 @@ class ChannelGuide(QDialog):
       self.mythDB = mythDB
       self.videoWidget = videoWidget
       self.visibleChannels = 11
-      self.startTime = datetime.datetime.today().replace(second = 0, microsecond = 0)
+      self.startTime = datetime.datetime.today()
+      if self.mythDB.isUTC():
+         self.startTime = datetime.datetime.utcnow()
+      self.startTime.replace(second = 0, microsecond = 0)
       if self.startTime.minute >= 30:
          self.startTime = self.startTime.replace(minute = 30)
       else:
@@ -170,7 +173,7 @@ class ChannelGuide(QDialog):
       self.channelLayout.addLayout(layout)
       currTime = self.startTime
       while currTime < self.startTime + self.displayLength:
-         timeText = currTime.time().strftime('%I:%M %p')
+         timeText = self.mythDB.fromUTC(currTime).time().strftime('%I:%M %p')
          callback = lambda x: x.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
          newItem = self.getItem(text = timeText, callback = callback)
          layout.addWidget(newItem)

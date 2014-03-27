@@ -19,12 +19,13 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from PyQt4.QtCore import QTimer
+import datetime
 import os
 from MythDBObjects import *
 
 class MythDB:
-   # Schema versions above this have not been verified to work
-   supportedSchemas = [1264, 1299]
+   # Schema versions not listed here may not work
+   supportedSchemas = [1264, 1299, 1317]
    disableWrites = False
    def __init__(self, host, user, password):
       self.engine = create_engine('mysql://' + user + ':' + password + '@' + host + '/mythconverg')
@@ -33,9 +34,9 @@ class MythDB:
       self.session = Session()
       
       self.writes = False
-      schemaVersion = int(self.getSetting('DBSchemaVer'))
+      self.schemaVersion = int(self.getSetting('DBSchemaVer'))
       # If not a supported schema, don't write to DB to avoid possible corruption
-      if schemaVersion <= self.supportedSchemas[-1] and not self.disableWrites:
+      if self.schemaVersion <= self.supportedSchemas[-1] and not self.disableWrites:
          self.writes = True
          
       # Ping the MySQL server periodically so our connection doesn't drop
@@ -191,5 +192,16 @@ class MythDB:
                                                 .filter(ProgramSchedule.starttime < endTime) \
                                                 .order_by(ProgramSchedule.chanid) \
                                                 .all()
+                                             
+   def fromUTC(self, time):
+      if self.isUTC():
+         localTime = datetime.datetime.now()
+         utcTime = datetime.datetime.utcnow()
+         offset = localTime - utcTime
+         return time + offset
+      return time
+      
+   def isUTC(self):
+      return self.schemaVersion > 1299
 
       

@@ -26,7 +26,8 @@ class Version:
       self.token = token
 
 class MythControl:
-   supportedVersions = [Version(63, '3875641D'), Version(72, 'D78EFD6F')]
+   supportedVersions = [Version(63, '3875641D'), Version(72, 'D78EFD6F'),
+                        Version(77, 'WindMark')]
    def __init__(self, mythDB):
       self.mythDB = mythDB
       self.connected = False
@@ -95,8 +96,11 @@ class MythControl:
          command = 'MYTH_PROTO_VERSION %s %s' % (str(nextVersion.num), nextVersion.token)
          response = self.sendCommand(command, force = True)
          if response.startswith('ACCEPT'):
+            self.currentVersion = nextVersion
             self.connected = True
             break
+      if not self.connected:
+         print '***Error: Failed to negotiate version with backend***'
       
       
    def annPlayback(self):
@@ -133,7 +137,7 @@ class MythControl:
       args = '[]:[]SPAWN_LIVETV[]:[]' + self.chain
       args += '[]:[]0[]:[]' + channel
       response = self.sendCommand(self.query() + args)
-      if not response.startswith('ok'):
+      if not response.lower().startswith('ok'):
          print 'Failed to start live tv'
          self.stopLiveTV()
          return False
@@ -214,7 +218,7 @@ class MythControl:
          return
          
       response = self.sendCommand(self.query() + '[]:[]STOP_LIVETV')
-      if not response.startswith('ok'):
+      if not response.lower().startswith('ok'):
          print 'Failed to stop live tv'
          
       # Based on packet captures of the official frontend, this isn't ever necessary

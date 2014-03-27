@@ -216,7 +216,8 @@ class MainForm(QDialog):
          self.programChannel.setText('NA')
       self.programTitle.setText(details.title)
       self.programSubtitle.setText(details.subtitle)
-      self.programStartTime.setText(str(details.starttime))
+      startTime = self.mythDB.fromUTC(details.starttime).strftime('%Y-%M-%d %I:%M %p')
+      self.programStartTime.setText(startTime)
       self.programTime.setText(str(int((details.endtime - details.starttime).total_seconds() / 60)) + ' minutes')
       self.programDescription.setText(details.description)
       
