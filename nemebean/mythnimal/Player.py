@@ -143,12 +143,15 @@ class Player(QObject):
             self.seekToLastCommercialStart()
       elif key == Qt.Key_D:
          settings['deinterlace'] = not settings['deinterlace']
-         self.setBookmarkSeconds(self.backend.position)
+         if settings['backend'] == 'mplayer':
+            self.setBookmarkSeconds(self.backend.position)
+            self.startBackend()
+         else:
+            self.backend.setDeinterlacing(settings['deinterlace'])
          if settings['deinterlace']:
             self.showMessage('Deinterlacing On')
          else:
             self.showMessage('Deinterlacing Off')
-         self.startBackend()
       elif key == Qt.Key_S:
          self.commskip = not self.commskip
          if self.commskip:

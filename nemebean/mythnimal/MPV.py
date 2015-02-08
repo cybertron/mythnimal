@@ -69,6 +69,9 @@ class MPV(QObject):
    def play(self):
       self.sendCommand(['set_property', 'pause', self.playing])
       self.playing = not self.playing
+      
+   def setDeinterlacing(self, deinterlace):
+      self.sendCommand(['set_property', 'deinterlace', deinterlace])
 
 
    def ensureRunning(self):
@@ -80,6 +83,10 @@ class MPV(QObject):
       fullCommand += ' --input-unix-socket=/tmp/mythnimal'
       fullCommand += ' --input-vo-keyboard=no'
       fullCommand += ' --wid=' + wid
+      if settings['deinterlace']:
+         fullCommand += ' --deinterlace=yes'
+      else:
+         fullCommand += ' --deinterlace=no'
       #fullCommand += ' ' + self.extraOptions
       fullCommand += ' ' + self.filename
       if self.process.state() == QProcess.NotRunning:
