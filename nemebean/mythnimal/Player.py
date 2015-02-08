@@ -20,7 +20,7 @@ from PyQt4.QtCore import QObject, Qt, QTimer, pyqtSignal
 from PyQt4.QtGui import QDialog, QHBoxLayout, QProgressBar, QX11Info
 from VideoOutput import VideoOutput
 from MPlayer import MPlayer
-from VLC import VLC
+from MPV import MPV
 from MythDBObjects import Markup
 from Overlays import *
 from ChannelGuide import ChannelGuide
@@ -57,22 +57,28 @@ class Player(QObject):
       self.videoOutput.move(x, y)
       self.videoOutput.showFullScreen()
       
-      self.startMPlayer()
+      self.startBackend()
       
-   def startMPlayer(self, restarting = False):
+   def startBackend(self, restarting = False):
       if restarting:
          self.startAtEnd = True
       
       self.fullPath = os.path.join(settings['mythFileDir'], self.filename)
-      #self.mplayer = VLC(self.videoOutput.videoLabel,
+      #self.backend = VLC(self.videoOutput.videoLabel,
       #                   self.fullPath)
-      self.mplayer = MPlayer(self.videoOutput.videoLabel,
+      mpv = True
+      if not mpv:#settings['backend'] == 'mplayer':
+         self.backend = MPlayer(self.videoOutput.videoLabel,
                              self.fullPath,
                              self.buildMPlayerOptions())
-      self.mplayer.foundAspect.connect(self.setAspect)
-      self.mplayer.foundPosition.connect(self.updatePosition)
-      self.mplayer.fileFinished.connect(self.end)
-      self.mplayer.playbackStarted.connect(self.playbackStarted)
+      else:
+         self.backend = MPV(self.videoOutput.videoLabel,
+                             self.fullPath,
+                             self.buildMPlayerOptions())
+      self.backend.foundAspect.connect(self.setAspect)
+      self.backend.foundPosition.connect(self.updatePosition)
+      self.backend.fileFinished.connect(self.end)
+      self.backend.playbackStarted.connect(self.playbackStarted)
       
       
    def buildMPlayerOptions(self):
@@ -90,8 +96,8 @@ class Player(QObject):
    def keyPressHandler(self, event):
       key = event.key()
       if key == Qt.Key_Space:
-         self.mplayer.play()
-         if not self.mplayer.playing:
+         self.backend.play()
+         if not self.backend.playing:
             self.seekOverlay.show()
          else:
             self.seekOverlay.hide()
@@ -137,12 +143,12 @@ class Player(QObject):
             self.seekToLastCommercialStart()
       elif key == Qt.Key_D:
          settings['deinterlace'] = not settings['deinterlace']
-         self.setBookmarkSeconds(self.mplayer.position)
+         self.setBookmarkSeconds(self.backend.position)
          if settings['deinterlace']:
             self.showMessage('Deinterlacing On')
          else:
             self.showMessage('Deinterlacing Off')
-         self.startMPlayer()
+         self.startBackend()
       elif key == Qt.Key_S:
          self.commskip = not self.commskip
          if self.commskip:
@@ -164,10 +170,10 @@ class Player(QObject):
 
       
    def seek(self, amount):
-      if self.mplayer.position + amount < 0:
+      if self.backend.position + amount < 0:
          self.seekedPastStart.emit()
       self.seekOverlay.showTimed()
-      self.mplayer.seekRelative(amount)
+      self.backend.seekRelative(amount)
       
       
    def end(self, eof = True):
@@ -176,17 +182,17 @@ class Player(QObject):
          self.checkRecording()
          if eof and self.recording:
             print 'Restarting'
-            self.startMPlayer(True)
+            self.startBackend(True)
             return
             
-         self.mplayer.end()
+         self.backend.end()
          self.videoOutput.hide()
          self.seekOverlay.hide()
          self.messageOverlay.hide()
          self.channelOverlay.hide()
          if self.guide:
             self.guide.hide()
-         self.mythDB.saveBookmark(self.mplayer, eof)
+         self.mythDB.saveBookmark(self.backend, eof)
          self.ended = True
          if self.emitFinished:
             self.finished.emit(eof)
@@ -205,8 +211,8 @@ class Player(QObject):
       
       
    def setAspect(self):
-      if self.mplayer.aspect > .0001:
-         self.videoOutput.setSize(self.mplayer.aspect * 1000, 1000)
+      if self.backend.aspect > .0001:
+         self.videoOutput.setSize(self.backend.aspect * 1000, 1000)
          # Need to trigger a resize event in order to make sure the video is resized correctly for the new aspect
          # Resize to same size won't do the trick
          width = self.videoOutput.width()
@@ -222,7 +228,7 @@ class Player(QObject):
       """
       rate = self.mythRate
       if rate is None:
-         return self.mplayer.fps
+         return self.backend.fps
       return self.mythRate
    
    
@@ -245,7 +251,7 @@ class Player(QObject):
       
    def playbackStarted(self):
       if self.startAtEnd:
-         self.setBookmarkSeconds(self.mplayer.length - 5)
+         self.setBookmarkSeconds(self.backend.length - 5)
          self.startAtEnd = False
          
       if self.bookmarkTime() > 0:
@@ -255,21 +261,21 @@ class Player(QObject):
             while self.nextSkip < startLen and self.commStartTime() < self.bookmarkTime():
                self.nextSkip += 1
                
-         self.mplayer.seekRelative(int(self.bookmarkTime()))
+         self.backend.seekRelative(int(self.bookmarkTime()))
          self.bookmark = 0 # Don't do this again, even if we get the signal again
          
    def updatePosition(self):
-      self.seekOverlay.setTime(self.mplayer.position, self.mplayer.length)
-      if self.mplayer.length > self.lastPosition:
-         self.lastPosition = self.mplayer.length
+      self.seekOverlay.setTime(self.backend.position, self.backend.length)
+      if self.backend.length > self.lastPosition:
+         self.lastPosition = self.backend.length
       
       if self.nextSkip < len(self.starts):
          start = self.commStartTime()
          end = self.commEndTime()
-         if self.mplayer.position > start:
+         if self.backend.position > start:
             message = 'Would have skipped %s'
             if self.commskip:
-               seekAmount = end - self.mplayer.position
+               seekAmount = end - self.backend.position
                self.seek(seekAmount)
                message = 'Skipped %s'
             self.nextSkip += 1
@@ -278,7 +284,7 @@ class Player(QObject):
    def seekToLastCommercialStart(self):
       previous = self.nextSkip - 1
       if previous >= 0 and previous < len(self.starts):
-         seekAmount = self.commStartTime(previous) - self.mplayer.position
+         seekAmount = self.commStartTime(previous) - self.backend.position
          self.seek(seekAmount)
          
          

@@ -30,6 +30,8 @@ class Settings:
       self.values['bufferTime'] = 5
       self.values['lengthUpdateInterval'] = 3000
       self.values['mplayer'] = 'mplayer'
+      self.values['mpv'] = 'mpv'
+      self.values['backend'] = 'mpv'
       
       self.configHandler = ConfigHandler('mythnimal')
       self.configHandler.loadDict('settings', self.values)
