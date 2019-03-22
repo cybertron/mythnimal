@@ -209,7 +209,7 @@ class MainForm(QDialog):
       channel = self.mythDB.getChannel(details.chanid)
       filename = self.getFullPath(details.basename)
       filename += '.png'
-      self.programThumbnail.setPixmap(QPixmap(filename))
+      self.programThumbnail.setPixmap(QPixmap(filename).scaledToWidth(self.width() / 3))
       if channel is not None:
          self.programChannel.setText(channel.channum + ' ' + channel.name)
       else:
