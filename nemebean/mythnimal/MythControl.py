@@ -27,7 +27,7 @@ class Version:
 
 class MythControl:
    supportedVersions = [Version(63, '3875641D'), Version(72, 'D78EFD6F'),
-                        Version(77, 'WindMark')]
+                        Version(77, 'WindMark'), Version(91, 'BuzzOff')]
    def __init__(self, mythDB):
       self.mythDB = mythDB
       self.connected = False

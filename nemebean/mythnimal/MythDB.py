@@ -25,7 +25,7 @@ from MythDBObjects import *
 
 class MythDB:
    # Schema versions not listed here may not work
-   supportedSchemas = [1264, 1299, 1317]
+   supportedSchemas = [1264, 1299, 1317, 1348]
    disableWrites = False
    def __init__(self, host, user, password):
       self.engine = create_engine('mysql://' + user + ':' + password + '@' + host + '/mythconverg')

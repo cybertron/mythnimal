@@ -80,7 +80,7 @@ class MPV(QObject):
       wid = str(int(wid))
 
       fullCommand = settings['mpv']
-      fullCommand += ' --input-unix-socket=/tmp/mythnimal'
+      fullCommand += ' --input-ipc-server=/tmp/mythnimal'
       fullCommand += ' --input-vo-keyboard=no'
       fullCommand += ' --wid=' + wid
       if settings['deinterlace']:
@@ -162,7 +162,6 @@ class MPV(QObject):
          return
       
       # Periodic status checks
-      self.sendCommand(['get_property', 'time-start'])
       self.sendCommand(['get_property', 'time-pos'])
       
       # This should probably be done in a loop to get all of the available data,
@@ -202,11 +201,16 @@ class MPV(QObject):
          
          
    def handleCommand(self, command, data):
-      if command == ['get_property', 'length']:
+      if command == ['get_property', 'duration']:
+         try:
+            data = float(data)
+         except ValueError:
+            print 'Got bad length value:', data
+            data = 0
          if data >= self.position:
             self.length = data
       elif command == ['get_property', 'time-pos']:
-         self.position = data - self.startTime
+         self.position = data
          if self.position > self.length:
             self.length = self.position
          self.foundPosition.emit()
@@ -214,8 +218,6 @@ class MPV(QObject):
             self.inPlayback = True
             self.playbackStarted.emit()
             self.getFileInfo()
-      elif command == ['get_property', 'time-start']:
-         self.startTime = data
       elif command == ['get_property', 'width']:
          self.width = data
       elif command == ['get_property', 'height']:
@@ -229,7 +231,7 @@ class MPV(QObject):
       self.sendCommand(['get_property', 'width'])
       self.sendCommand(['get_property', 'height'])
       self.sendCommand(['get_property', 'video-params/aspect'])
-      self.sendCommand(['get_property', 'length'])
+      self.sendCommand(['get_property', 'duration'])
 
 
    def readStdout(self):
@@ -276,7 +278,7 @@ class MPV(QObject):
       
       
    def startInfoProcess(self):
-      fullCommand = '--term-playing-msg=length::${=length} --vo=null --ao=null --frames=1 --quiet --no-cache --no-config -- ' + self.filename
+      fullCommand = '--term-playing-msg=length::${=duration} --vo=null --ao=null --frames=1 --quiet --no-cache --no-config -- ' + self.filename
       args = fullCommand.split()
       self.infoProcess.start(settings['mpv'], args)
       
@@ -284,5 +286,5 @@ class MPV(QObject):
    def infoStdout(self):
       lines = self.infoProcess.readAllStandardOutput().data().splitlines()
       for line in lines:
-         if line.find("length::") != -1:
+         if line.find("duration::") != -1:
             self.length = float(line.split('::')[1])
