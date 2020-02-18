@@ -1,4 +1,4 @@
-from PyQt4.QtCore import QObject, pyqtSignal, QTimer
+from PyQt5.QtCore import QObject, pyqtSignal, QTimer
 import nemebean.mythnimal.libvlc as libvlc
 from Settings import settings
 import time

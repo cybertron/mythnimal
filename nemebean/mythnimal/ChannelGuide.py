@@ -16,8 +16,8 @@
 #
 # Copyright 2012, 2013 Ben Nemec
 # @End License@
-from PyQt4.QtGui import QDialog, QHBoxLayout, QVBoxLayout, QWidget, QSizePolicy
-from PyQt4.QtCore import Qt, pyqtSignal
+from PyQt5.QtWidgets import QDialog, QHBoxLayout, QVBoxLayout, QWidget, QSizePolicy
+from PyQt5.QtCore import Qt, pyqtSignal
 import datetime
 from ScaledLabel import ScaledLabel
 

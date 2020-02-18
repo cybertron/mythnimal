@@ -18,7 +18,7 @@
 # @End License@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from PyQt4.QtCore import QTimer
+from PyQt5.QtCore import QTimer
 import datetime
 import os
 from MythDBObjects import *

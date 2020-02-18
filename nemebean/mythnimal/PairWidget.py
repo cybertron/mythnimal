@@ -16,7 +16,7 @@
 #
 # Copyright 2012, 2013 Ben Nemec
 # @End License@
-from PyQt4.QtGui import *
+from PyQt5.QtWidgets import *
 
 class PairWidget(QWidget):
    def __init__(self, label, widget, parent = None):

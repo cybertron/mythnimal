@@ -17,8 +17,8 @@
 # Copyright 2012, 2013 Ben Nemec
 # @End License@
 from MenuItem import MenuItem
-from PyQt4.QtGui import QLabel, QPalette, QColor
-from PyQt4.QtCore import Qt
+from PyQt5.QtWidgets import QLabel, QPalette, QColor
+from PyQt5.QtCore import Qt
 
 class ShowMenuItem(MenuItem):
    def __init__(self, title):

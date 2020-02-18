@@ -16,8 +16,9 @@
 #
 # Copyright 2012, 2013 Ben Nemec
 # @End License@
-from PyQt4.QtGui import *
-from PyQt4.QtCore import Qt, pyqtSignal, QTimer
+from PyQt5.QtWidgets import *
+from PyQt5.QtGui import QPixmap
+from PyQt5.QtCore import Qt, pyqtSignal, QTimer
 from Settings import settings
 from Player import Player
 from MythDB import MythDB
@@ -41,7 +42,7 @@ class MainForm(QDialog):
       
       if settings['firstRun']:
          self.initialSetup()
-      
+
       self.mythDB = MythDB(settings['dbHost'], settings['dbUser'], settings['dbPassword'])
       self.mythControl = MythControl(self.mythDB)
       self.refreshShowList()

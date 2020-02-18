@@ -16,7 +16,7 @@
 #
 # Copyright 2012, 2013 Ben Nemec
 # @End License@
-from PyQt4.QtGui import QLabel
+from PyQt5.QtWidgets import QLabel
 
 fullScale = 1
 

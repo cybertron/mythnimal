@@ -16,8 +16,8 @@
 #
 # Copyright 2012, 2013 Ben Nemec
 # @End License@
-from PyQt4.QtCore import QObject, Qt, QTimer, pyqtSignal
-from PyQt4.QtGui import QDialog, QHBoxLayout, QProgressBar, QX11Info
+from PyQt5.QtCore import QObject, Qt, QTimer, pyqtSignal
+from PyQt5.QtWidgets import QDialog, QHBoxLayout, QProgressBar
 from VideoOutput import VideoOutput
 from MPlayer import MPlayer
 from MPV import MPV

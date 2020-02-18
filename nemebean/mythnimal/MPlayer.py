@@ -19,7 +19,7 @@
 # @End License@
 
 from Settings import settings
-from PyQt4.QtCore import *
+from PyQt5.QtCore import *
 import time, sys, os
 
 class MPlayer(QObject):

@@ -16,8 +16,8 @@
 #
 # Copyright 2012, 2013 Ben Nemec
 # @End License@
-from PyQt4.QtCore import pyqtSignal, Qt
-from PyQt4.QtGui import QWidget, QScrollArea, QVBoxLayout, QLayout
+from PyQt5.QtCore import pyqtSignal, Qt
+from PyQt5.QtWidgets import QWidget, QScrollArea, QVBoxLayout, QLayout
 
 class MenuWidget(QScrollArea):
    selected = pyqtSignal(int)

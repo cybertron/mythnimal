@@ -16,8 +16,9 @@
 #
 # Copyright 2012, 2013 Ben Nemec
 # @End License@
-from PyQt4.QtGui import QVBoxLayout, QDialog, QX11Info, QHBoxLayout, QProgressBar
-from PyQt4.QtCore import Qt, QTimer, pyqtSignal
+from PyQt5.QtWidgets import QVBoxLayout, QDialog, QHBoxLayout, QProgressBar
+from PyQt5.QtCore import Qt, QTimer, pyqtSignal
+from PyQt5.QtX11Extras import QX11Info
 from MPlayer import MPlayer
 from ScaledLabel import ScaledLabel
 
@@ -32,9 +33,7 @@ class Overlay(QDialog):
                           Qt.FramelessWindowHint |
                           Qt.WindowStaysOnTopHint)
       self.setFocusPolicy(Qt.NoFocus)
-      # Causes issues in some non-compositing WM's (notably Fluxbox)
-      if QX11Info.isCompositingManagerRunning():
-         self.setAttribute(Qt.WA_TranslucentBackground)
+      self.setAttribute(Qt.WA_TranslucentBackground)
          
       self.timer = QTimer()
       self.timer.setSingleShot(True)

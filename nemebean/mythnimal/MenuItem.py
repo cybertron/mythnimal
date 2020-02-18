@@ -16,8 +16,9 @@
 #
 # Copyright 2012, 2013 Ben Nemec
 # @End License@
-from PyQt4.QtGui import QWidget, QPalette, QColor, QHBoxLayout
-from PyQt4.QtCore import Qt, pyqtSignal
+from PyQt5.QtWidgets import QWidget, QHBoxLayout
+from PyQt5.QtGui import QPalette, QColor
+from PyQt5.QtCore import Qt, pyqtSignal
 from ScaledLabel import ScaledLabel
 
 class MenuItem(QWidget):

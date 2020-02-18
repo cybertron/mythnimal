@@ -18,8 +18,9 @@
 # Copyright 2012, 2013 Ben Nemec
 # @End License@
 
-from PyQt4.QtGui import QWidget, QGridLayout, QLabel, QSizePolicy, QRegion
-from PyQt4.QtCore import QTimer, pyqtSignal, Qt
+from PyQt5.QtWidgets import QWidget, QGridLayout, QLabel, QSizePolicy
+from PyQt5.QtGui import QRegion
+from PyQt5.QtCore import QTimer, pyqtSignal, Qt
 
 class VideoOutput(QWidget):
    readyForOverlay = pyqtSignal()
