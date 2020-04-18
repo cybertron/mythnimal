@@ -52,6 +52,7 @@ class Player(QObject):
       self.recording = self.mythDB.programInUse(self.program)
       
       self.videoOutput = VideoOutput(None, self.keyPressHandler)
+      self.videoOutput.setWindowTitle(self.program.title)
       self.createOverlays()
       self.videoOutput.readyForOverlay.connect(self.placeOverlays)
       self.videoOutput.move(x, y)
