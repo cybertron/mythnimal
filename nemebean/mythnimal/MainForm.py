@@ -141,6 +141,11 @@ class MainForm(QDialog):
       self.mpvInput = QLineEdit()
       self.miscGroupLayout.addWidget(PairWidget('MPV Command', self.mpvInput))
       
+      self.fullscreenInput = QCheckBox()
+      # Check box text appears on the other side from all of the other settings.
+      # Use a pair widget for consistency.
+      self.miscGroupLayout.addWidget(PairWidget('Fullscreen', self.fullscreenInput))
+      
       self.bufferTimeInput = QSpinBox()
       self.miscGroupLayout.addWidget(PairWidget('Buffer Time', self.bufferTimeInput))
       
@@ -248,6 +253,7 @@ class MainForm(QDialog):
       self.fileDirInput.setText(settings['mythFileDir'])
       self.mpvInput.setText(settings['mpv'])
       self.bufferTimeInput.setValue(settings['bufferTime'])
+      self.fullscreenInput.setChecked(settings['fullscreen'])
       
    def showSettingsTab(self):
       self.populateSettings()
@@ -261,6 +267,7 @@ class MainForm(QDialog):
       settings['mythFileDir'] = str(self.fileDirInput.text())
       settings['mpv'] = str(self.mpvInput.text())
       settings['bufferTime'] = self.bufferTimeInput.value()
+      settings['fullscreen'] = self.fullscreenInput.isChecked()
       settings.save()
       if settings['firstRun']:
          self.initConfig.hide()

@@ -27,6 +27,7 @@ class Settings:
       self.values['dbPassword'] = 'mythtv'
       self.values['firstRun'] = True
       self.values['deinterlace'] = True
+      self.values['fullscreen'] = True
       self.values['bufferTime'] = 5
       self.values['lengthUpdateInterval'] = 3000
       self.values['mplayer'] = 'mplayer'

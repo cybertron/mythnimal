@@ -40,6 +40,10 @@ class Overlay(QDialog):
       self.timer.timeout.connect(self.hide)
       
       
+   def show(self, *args, **kwargs):
+      super(Overlay, self).show(*args, **kwargs)
+      self.shown.emit()
+      
    def showTimed(self, interval = 2000):
       self.show()
       self.timer.start(interval)
@@ -65,7 +69,7 @@ class SeekOverlay(Overlay):
       
    def resizeEvent(self, event):
       textHeight = event.size().height() * .4
-      self.timeBar.setStyleSheet('QProgressBar {font-size: %dpt;}' % textHeight)
+      self.timeBar.setStyleSheet('QProgressBar {font-size: %dpx;}' % textHeight)
       
       
    def setTime(self, current, total):

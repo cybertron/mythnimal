@@ -55,7 +55,10 @@ class Player(QObject):
       self.createOverlays()
       self.videoOutput.readyForOverlay.connect(self.placeOverlays)
       self.videoOutput.move(x, y)
-      self.videoOutput.showFullScreen()
+      if settings['fullscreen']:
+         self.videoOutput.showFullScreen()
+      else:
+         self.videoOutput.show()
       
       self.startBackend()
       
@@ -215,11 +218,17 @@ class Player(QObject):
       
    def setAspect(self):
       if self.backend.aspect > .0001:
+         # Set output to correct aspect, which will be respected by future
+         # resize events.
          self.videoOutput.setSize(self.backend.aspect * 1000, 1000)
          # Need to trigger a resize event in order to make sure the video is resized correctly for the new aspect
          # Resize to same size won't do the trick
-         width = self.videoOutput.width()
-         height = self.videoOutput.height()
+         if settings['fullscreen']:
+            width = self.videoOutput.width()
+            height = self.videoOutput.height()
+         else:
+            width = self.backend.width
+            height = self.backend.height
          self.videoOutput.resize(1, 1)
          self.videoOutput.resize(width, height)
          
