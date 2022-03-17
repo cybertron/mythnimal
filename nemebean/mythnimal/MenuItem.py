@@ -67,13 +67,14 @@ class ProgramMenuItem(MenuItem):
       MenuItem.__init__(self)
       
       self.programData = programData
-      self.id = programData.basename
+      self.id = programData['FileName']
+      self.program = programData
       
       self.layout = QHBoxLayout(self)
       
-      text = programData.title
-      if programData.subtitle != '':
-         text += ' - ' + programData.subtitle
+      text = programData['Title']
+      if programData['SubTitle'] != '':
+         text += ' - ' + programData['SubTitle']
       self.programLabel = ScaledLabel(text)
       self.layout.addWidget(self.programLabel)
       

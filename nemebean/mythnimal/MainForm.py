@@ -29,6 +29,8 @@ from .TabWidget import TabWidget
 from .PairWidget import PairWidget
 from .MythControl import MythControl
 from .ScaledLabel import ScaledLabel
+from .MythService import MythService
+import datetime
 import os
 import time
 
@@ -44,7 +46,8 @@ class MainForm(QDialog):
          self.initialSetup()
 
       self.mythDB = MythDB(settings['dbHost'], settings['dbUser'], settings['dbPassword'])
-      self.mythControl = MythControl(self.mythDB)
+      self.mythService = MythService()
+      #self.mythControl = MythControl(self.mythDB)
       self.refreshShowList()
       
       self.setWindowTitle('Mythnimal')
@@ -173,15 +176,17 @@ class MainForm(QDialog):
       newItem.id = '%'
       self.showMenu.add(newItem)
       self.showFilter = '%'
-      shows = self.mythDB.showList()
+      #shows = self.mythDB.showList()
+      shows = self.mythService.showList()
       for i in shows:
-         self.showMenu.add(SimpleMenuItem(i.title))
+         self.showMenu.add(SimpleMenuItem(i))
          
       self.refreshProgramList()
          
    def refreshProgramList(self):
       self.programMenu.reset()
-      programs = self.mythDB.programList(self.showFilter)
+      #programs = self.mythDB.programList(self.showFilter)
+      programs = self.mythService.programList(self.showFilter)
       for i in programs:
          self.programMenu.add(ProgramMenuItem(i))
          
@@ -208,29 +213,32 @@ class MainForm(QDialog):
       selected = self.programMenu.selectedItem()
       if selected is None:
          return
-      details = self.mythDB.getProgram(selected.id)
-      if details is None:
-         self.refreshProgramList()
-         return
-      channel = self.mythDB.getChannel(details.chanid)
-      filename = self.getFullPath(details.basename)
+      #details = self.mythDB.getProgram(selected.id)
+      #if details is None:
+      #   self.refreshProgramList()
+      #   return
+      details = selected.program
+      channel = details['Channel']
+      filename = self.getFullPath(details['FileName'])
       filename += '.png'
+      startTime = datetime.datetime.strptime(details['StartTime'], '%Y-%m-%dT%H:%M:%SZ')
+      endTime = datetime.datetime.strptime(details['EndTime'], '%Y-%m-%dT%H:%M:%SZ')
       self.programThumbnail.setPixmap(QPixmap(filename).scaledToWidth(self.width() / 3))
       if channel is not None:
-         self.programChannel.setText(channel.channum + ' ' + channel.name)
+         self.programChannel.setText(channel['ChanNum'] + ' ' + channel['ChannelName'])
       else:
          self.programChannel.setText('NA')
-      self.programTitle.setText(details.title)
-      self.programSubtitle.setText(details.subtitle)
-      startTime = self.mythDB.fromUTC(details.starttime).strftime('%Y-%m-%d %I:%M %p')
-      self.programStartTime.setText(startTime)
-      self.programTime.setText(str(int((details.endtime - details.starttime).total_seconds() / 60)) + ' minutes')
-      self.programDescription.setText(details.description)
+      self.programTitle.setText(details['Title'])
+      self.programSubtitle.setText(details['SubTitle'])
+      start = self.mythDB.fromUTC(startTime).strftime('%Y-%m-%d %I:%M %p')
+      self.programStartTime.setText(start)
+      self.programTime.setText(str(int((endTime - startTime).total_seconds() / 60)) + ' minutes')
+      self.programDescription.setText(details['Description'])
       
       
    # Index is ignored
    def programSelected(self, index):
-      self.startPlayer(self.programMenu.selectedItem().id, live = False)
+      self.startPlayer(self.programMenu.selectedItem().program, live = False)
       
       
    # TODO Needs to be reimplemented using MenuItem signals
@@ -312,11 +320,11 @@ class MainForm(QDialog):
       self.startPlayer(filename, live = True)
       
       
-   def startPlayer(self, filename, live = False, startAtEnd = False):
-      if filename is not None:
+   def startPlayer(self, program, live = False, startAtEnd = False):
+      if program['FileName'] is not None:
          playerX = self.x() + self.width() / 2
          playerY = self.y() + self.height() / 2
-         self.player = Player(playerX, playerY, filename, self.mythDB, startAtEnd)
+         self.player = Player(playerX, playerY, program, self.mythDB, startAtEnd)
          self.player.finished.connect(self.activateWindow)
          if live:
             if self.previousChannel is None:

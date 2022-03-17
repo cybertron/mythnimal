@@ -32,10 +32,10 @@ class Player(QObject):
    channelChange = pyqtSignal(str)
    seekedPastStart = pyqtSignal()
    toggleRecording = pyqtSignal()
-   def __init__(self, x, y, filename, mythDB, startAtEnd = False):
+   def __init__(self, x, y, program, mythDB, startAtEnd = False):
       QObject.__init__(self)
       
-      self.filename = filename
+      self.filename = program['FileName']
       self.mythDB = mythDB
       self.startAtEnd = startAtEnd
       self.ended = False
@@ -47,12 +47,12 @@ class Player(QObject):
       self.commskip = True
       
       self.getSkipList()
-      self.bookmark = self.mythDB.bookmark(self.filename)
-      self.program = self.mythDB.getProgram(self.filename)
-      self.recording = self.mythDB.programInUse(self.program)
+      #self.bookmark = self.mythDB.bookmark(self.filename)
+      self.program = program
+      #self.recording = self.mythDB.programInUse(self.program)
       
       self.videoOutput = VideoOutput(None, self.keyPressHandler)
-      self.videoOutput.setWindowTitle(self.program.title)
+      self.videoOutput.setWindowTitle(self.program['Title'])
       self.createOverlays()
       self.videoOutput.readyForOverlay.connect(self.placeOverlays)
       self.videoOutput.move(x, y)
@@ -162,12 +162,12 @@ class Player(QObject):
             self.showMessage('Skipping Commercials')
          else:
             self.showMessage('Not Skipping Commercials')
-      elif key == Qt.Key_G:
-         if self.currentChannel is not None:
-            self.guide = ChannelGuide(self.currentChannel, self.mythDB, self.videoOutput)
-            self.guide.channelSelected.connect(self.changeChannel)
-            self.guide.showFullScreen()
-            self.guide.raise_()
+      #elif key == Qt.Key_G:
+         #if self.currentChannel is not None:
+            #self.guide = ChannelGuide(self.currentChannel, self.mythDB, self.videoOutput)
+            #self.guide.channelSelected.connect(self.changeChannel)
+            #self.guide.showFullScreen()
+            #self.guide.raise_()
       elif key == Qt.Key_R:
          if self.currentChannel is not None:
             self.toggleRecording.emit()
@@ -199,7 +199,7 @@ class Player(QObject):
          self.channelOverlay.hide()
          if self.guide:
             self.guide.hide()
-         self.mythDB.saveBookmark(self.backend, eof)
+         #self.mythDB.saveBookmark(self.backend, eof)
          self.ended = True
          if self.emitFinished:
             self.finished.emit(eof)
@@ -213,7 +213,10 @@ class Player(QObject):
       
       
    def getSkipList(self):
-      (self.starts, self.ends, self.mythRate) = self.mythDB.skipList(self.filename)
+      #(self.starts, self.ends, self.mythRate) = self.mythDB.skipList(self.filename)
+      self.starts = []
+      self.ends = []
+      self.mythRate = 0
       self.nextSkip = 0
       
       
@@ -260,6 +263,7 @@ class Player(QObject):
       return self.getTime(self.ends[i])
       
    def bookmarkTime(self):
+      return 0
       return self.getTime(self.bookmark)
       
    def playbackStarted(self):
@@ -335,7 +339,7 @@ class Player(QObject):
       
       
    def checkRecording(self):
-      self.recording = self.mythDB.programInUse(self.program)
+      self.recording = False #self.mythDB.programInUse(self.program)
       
       
    def setBookmarkSeconds(self, seconds):

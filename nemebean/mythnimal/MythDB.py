@@ -28,6 +28,7 @@ class MythDB:
    supportedSchemas = [1264, 1299, 1317, 1348]
    disableWrites = True
    def __init__(self, host, user, password):
+      return
       self.engine = create_engine('mysql+pymysql://' + user + ':' + password + '@' + host + '/mythconverg')
       
       Session = sessionmaker(bind=self.engine)
@@ -202,6 +203,7 @@ class MythDB:
       return time
       
    def isUTC(self):
+      return True
       return self.schemaVersion > 1299
 
       
