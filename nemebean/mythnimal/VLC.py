@@ -1,6 +1,6 @@
 from PyQt5.QtCore import QObject, pyqtSignal, QTimer
 import nemebean.mythnimal.libvlc as libvlc
-from Settings import settings
+from .Settings import settings
 import time
 
 class VLC(QObject):
@@ -67,7 +67,7 @@ class VLC(QObject):
          self.aspect = self._vlc.video_get_aspect_ratio()
          if self.aspect is None:
             self.aspect = float(self.width) / float(self.height)
-         print self.aspect
+         print(self.aspect)
          self.foundAspect.emit()
       
       self.fps = self._vlc.get_fps()
@@ -85,11 +85,11 @@ class VLC(QObject):
          # In case we can't get the length for some reason
          if time.time() - start > 1:
             self.length = self.position
-            print 'Failed to get time'
+            print('Failed to get time')
             break
          self.length = media.get_duration() / 1000
-         print media.get_duration()
-      print self.length
+         print(media.get_duration())
+      print(self.length)
       
       
    def play(self):

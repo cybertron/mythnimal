@@ -16,7 +16,7 @@
 #
 # Copyright 2012, 2013 Ben Nemec
 # @End License@
-import cPickle, os
+import pickle, os
 
 class ConfigHandler:
    def __init__(self, appName):
@@ -29,7 +29,7 @@ class ConfigHandler:
    def saveObject(self, name, obj):
       filename = os.path.join(self.configDir, name)
       with open(filename, 'wb') as f:
-         cPickle.dump(obj, f)
+         pickle.dump(obj, f)
    
 
    def loadDict(self, name, default):
@@ -37,7 +37,7 @@ class ConfigHandler:
       filename = os.path.join(self.configDir, name)
       # Don't load directly so we can add new default values as needed
       temp = self.loadConfig(filename, default)
-      for key, value in temp.items():
+      for key, value in list(temp.items()):
          retval[key] = value
          
       return retval
@@ -46,6 +46,6 @@ class ConfigHandler:
    def loadConfig(self, filename, default):
       if os.path.exists(filename):
          with open(filename, 'rb') as f:
-            return cPickle.load(f)
+            return pickle.load(f)
       else:
          return default

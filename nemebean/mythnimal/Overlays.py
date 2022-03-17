@@ -19,8 +19,8 @@
 from PyQt5.QtWidgets import QVBoxLayout, QDialog, QHBoxLayout, QProgressBar
 from PyQt5.QtCore import Qt, QTimer, pyqtSignal
 from PyQt5.QtX11Extras import QX11Info
-from MPlayer import MPlayer
-from ScaledLabel import ScaledLabel
+from .MPlayer import MPlayer
+from .ScaledLabel import ScaledLabel
 
 class Overlay(QDialog):
    shown = pyqtSignal()

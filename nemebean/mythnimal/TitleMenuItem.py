@@ -16,7 +16,7 @@
 #
 # Copyright 2012, 2013 Ben Nemec
 # @End License@
-from MenuItem import MenuItem
+from .MenuItem import MenuItem
 from PyQt5.QtWidgets import QLabel, QPalette, QColor
 from PyQt5.QtCore import Qt
 

@@ -18,7 +18,7 @@
 # Copyright 2012, 2013 Ben Nemec
 # @End License@
 
-from Settings import settings
+from .Settings import settings
 from PyQt5.QtCore import *
 import time, sys, os
 
@@ -31,9 +31,9 @@ class MPlayer(QObject):
 
    @staticmethod
    def formatTime(time):
-      hours = time / 3600
+      hours = time // 3600
       tempTime = time - hours * 3600
-      minutes = tempTime / 60
+      minutes = tempTime // 60
       seconds = tempTime - minutes * 60
       if hours > 0:
          return str(hours) + ':' + str(minutes).zfill(2) + ':' + str(seconds).zfill(2)
@@ -91,7 +91,7 @@ class MPlayer(QObject):
       if self.process.state() == QProcess.NotRunning:
          if self.logWidget:
             self.logWidget.append("MPlayer Command: " + fullCommand)
-         print "MPlayer Command:", fullCommand
+         print("MPlayer Command:", fullCommand)
          self.process.start(fullCommand)
 
 
@@ -113,7 +113,7 @@ class MPlayer(QObject):
       
       
    def seekRelative(self, amount):
-      print 'Seeking:', amount
+      print('Seeking:', amount)
       self.process.write('pausing_keep_force seek ' + str(amount) + '\n')
 
 
@@ -145,7 +145,7 @@ class MPlayer(QObject):
          if line.startswith('PROGRAM_ID'):
             continue
          
-         print "MPlayer:", line
+         print("MPlayer:", line)
          if self.logWidget:
             self.logWidget.append("MPlayer: " + line)
             
@@ -160,25 +160,25 @@ class MPlayer(QObject):
             foundTitle = line[8:]
             if foundTitle != "":
                self.title = foundTitle
-            print "Found title:", self.title
+            print("Found title:", self.title)
 
          if line.find("Name: ") != -1:
             foundTitle = line[7:]
             if foundTitle != "":
                self.title = foundTitle
-            print "Found title:", self.title
+            print("Found title:", self.title)
 
          if line.find("Artist:") != -1:
             foundArtist = line[9:]
             if foundArtist != "":
                self.artist = foundArtist
-            print "Found artist:", self.artist
+            print("Found artist:", self.artist)
 
          if line.find("Album:") != -1:
             foundAlbum = line[8:]
             if foundAlbum != "":
                self.album = foundAlbum
-            print "Found album:", self.album
+            print("Found album:", self.album)
 
          if line.find("ID_LENGTH=") != -1:
             self.length = int(float(line[10:]))

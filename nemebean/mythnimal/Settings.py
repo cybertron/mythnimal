@@ -16,7 +16,7 @@
 #
 # Copyright 2012, 2013 Ben Nemec
 # @End License@
-from ConfigHandler import ConfigHandler
+from .ConfigHandler import ConfigHandler
 
 class Settings:
    def __init__(self):

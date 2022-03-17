@@ -19,7 +19,7 @@
 from PyQt5.QtWidgets import QDialog, QHBoxLayout, QVBoxLayout, QWidget, QSizePolicy
 from PyQt5.QtCore import Qt, pyqtSignal
 import datetime
-from ScaledLabel import ScaledLabel
+from .ScaledLabel import ScaledLabel
 
 class ChannelGuide(QDialog):
    channelSelected = pyqtSignal(str)

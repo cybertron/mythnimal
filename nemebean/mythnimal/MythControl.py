@@ -18,7 +18,7 @@
 # @End License@
 import socket, datetime, os
 import time
-from Settings import settings
+from .Settings import settings
 
 class Version:
    def __init__(self, num, token):
@@ -55,23 +55,24 @@ class MythControl:
           response: Whether to wait for the response from mythbackend
           force: Send whether or not we're connected - intended only for negotiating versions
       """
+      return
       if not force and not self.connected:
-         print 'Not connected to send command: %s' % command
+         print('Not connected to send command: %s' % command)
          return
          
       length = len(command)
       length = str(length).ljust(8)
       commandStr = str(length + command)
       if self.verbose:
-         print 'Sending:', commandStr
-      self.socket.sendall(commandStr)
+         print('Sending:', commandStr)
+      self.socket.sendall(commandStr.encode())
       if response:
          length = self.recv(8)
          if self.verbose:
-            print length,
+            print(length, end=' ')
          data = self.recv(int(length))
          if self.verbose:
-            print data
+            print(data)
          return data
       return None
       
@@ -82,30 +83,33 @@ class MythControl:
          try:
             data = self.socket.recv(length)
             done = True
-         except socket.error as (errno, msg):
+         except socket.error as xxx_todo_changeme:
+            (errno, msg) = xxx_todo_changeme.args
             if errno != 4:
                raise
       return data
       
       
    def negotiateVersion(self):
+      return
       response = ''
       for nextVersion in self.supportedVersions:
          self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
          self.socket.connect((self.backendIP, self.backendPort))
          command = 'MYTH_PROTO_VERSION %s %s' % (str(nextVersion.num), nextVersion.token)
          response = self.sendCommand(command, force = True)
-         if response.startswith('ACCEPT'):
+         if response.startswith(b'ACCEPT'):
             self.currentVersion = nextVersion
             self.connected = True
             break
       if not self.connected:
-         print '***Error: Failed to negotiate version with backend***'
+         print('***Error: Failed to negotiate version with backend***')
       
       
    def annPlayback(self):
+      return
       response = self.sendCommand('ANN Playback ' + socket.gethostname() + ' 0')
-      if not response.startswith('OK'):
+      if not response.startswith(b'OK'):
          self.connected = False
          
          
@@ -138,7 +142,7 @@ class MythControl:
       args += '[]:[]0[]:[]' + channel
       response = self.sendCommand(self.query() + args)
       if not response.lower().startswith('ok'):
-         print 'Failed to start live tv'
+         print('Failed to start live tv')
          self.stopLiveTV()
          return False
       return True
@@ -164,7 +168,7 @@ class MythControl:
       cards = self.mythDB.getCardInputBySourceID(channelInfo.sourceid)
          
       freeCards = self.sendCommand('GET_FREE_RECORDER_LIST').split('[]:[]')
-      print freeCards
+      print(freeCards)
       for i in cards:
          if str(i.cardid) in freeCards:
             response = self.sendCommand('QUERY_RECORDER ' + str(i.cardid) + '[]:[]IS_RECORDING')
@@ -205,7 +209,7 @@ class MythControl:
       while not response.startswith('1'):
          time.sleep(.5)
          if datetime.datetime.today() - start > datetime.timedelta(seconds = self.recordingTimeout):
-            print 'Timed out waiting for recording to start'
+            print('Timed out waiting for recording to start')
             self.stopLiveTV()
             return False
          response = self.sendCommand(self.query() + '[]:[]IS_RECORDING')
@@ -219,13 +223,13 @@ class MythControl:
          
       response = self.sendCommand(self.query() + '[]:[]STOP_LIVETV')
       if not response.lower().startswith('ok'):
-         print 'Failed to stop live tv'
+         print('Failed to stop live tv')
          
       # Based on packet captures of the official frontend, this isn't ever necessary
       if False: #not self.recordCurrent:
          response = self.sendCommand(self.query() + '[]:[]FINISH_RECORDING')
          if not response.startswith('ok'):
-            print 'Failed to stop recorder'
+            print('Failed to stop recorder')
             
       self.liveTVRecorder = None
       

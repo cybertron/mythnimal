@@ -18,13 +18,13 @@
 # @End License@
 from PyQt5.QtCore import QObject, Qt, QTimer, pyqtSignal
 from PyQt5.QtWidgets import QDialog, QHBoxLayout, QProgressBar
-from VideoOutput import VideoOutput
-from MPlayer import MPlayer
-from MPV import MPV
-from MythDBObjects import Markup
-from Overlays import *
-from ChannelGuide import ChannelGuide
-from Settings import settings
+from .VideoOutput import VideoOutput
+from .MPlayer import MPlayer
+from .MPV import MPV
+from .MythDBObjects import Markup
+from .Overlays import *
+from .ChannelGuide import ChannelGuide
+from .Settings import settings
 import os
 
 class Player(QObject):
@@ -127,7 +127,7 @@ class Player(QObject):
             self.showMessage('Zoom: 25%')
       elif key == Qt.Key_I:
          self.seekOverlay.showTimed()
-         print self.seekOverlay.pos(), self.seekOverlay.size()
+         print(self.seekOverlay.pos(), self.seekOverlay.size())
          if self.currentChannel is not None:
             self.channelOverlay.message.setText(self.currentChannel)
             self.channelOverlay.showTimed()
@@ -188,7 +188,7 @@ class Player(QObject):
       if not self.ended:
          self.checkRecording()
          if eof and self.recording:
-            print 'Restarting'
+            print('Restarting')
             self.startBackend(True)
             return
             

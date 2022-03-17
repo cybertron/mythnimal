@@ -19,16 +19,16 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import Qt, pyqtSignal, QTimer
-from Settings import settings
-from Player import Player
-from MythDB import MythDB
-from MythDBObjects import Program
-from MenuWidget import MenuWidget
-from MenuItem import SimpleMenuItem, ProgramMenuItem
-from TabWidget import TabWidget
-from PairWidget import PairWidget
-from MythControl import MythControl
-from ScaledLabel import ScaledLabel
+from .Settings import settings
+from .Player import Player
+from .MythDB import MythDB
+from .MythDBObjects import Program
+from .MenuWidget import MenuWidget
+from .MenuItem import SimpleMenuItem, ProgramMenuItem
+from .TabWidget import TabWidget
+from .PairWidget import PairWidget
+from .MythControl import MythControl
+from .ScaledLabel import ScaledLabel
 import os
 import time
 
@@ -243,7 +243,7 @@ class MainForm(QDialog):
       elif index == 2:
          self.showSettingsTab()
       else:
-         print 'Unimplemented main menu item selected'
+         print('Unimplemented main menu item selected')
          
          
    def populateSettings(self):
@@ -340,7 +340,7 @@ class MainForm(QDialog):
             if i + 1 < len(chain):
                nextChain = chain[i + 1]
             else:
-               print 'Waiting for next program to start'
+               print('Waiting for next program to start')
          nextProgram = self.mythDB.getProgramByChain(nextChain)
          self.player.emitFinished = False
          self.player.end(eof = False)

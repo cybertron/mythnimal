@@ -52,9 +52,9 @@ build_date  = "Wed Feb 13 18:40:24 2013"
 
 if sys.version_info[0] > 2:
     str = str
-    unicode = str
+    str = str
     bytes = bytes
-    basestring = (str, bytes)
+    str = (str, bytes)
     PYTHON3 = True
     def str_to_bytes(s):
         """Translate string or bytes to bytes.
@@ -73,14 +73,14 @@ if sys.version_info[0] > 2:
             return b
 else:
     str = str
-    unicode = unicode
+    str = str
     bytes = str
-    basestring = basestring
+    str = str
     PYTHON3 = False
     def str_to_bytes(s):
         """Translate string or bytes to bytes.
         """
-        if isinstance(s, unicode):
+        if isinstance(s, str):
             return s.encode(sys.getfilesystemencoding())
         else:
             return s
@@ -89,7 +89,7 @@ else:
         """Translate bytes to unicode string.
         """
         if isinstance(b, str):
-            return unicode(b, sys.getfilesystemencoding())
+            return str(b, sys.getfilesystemencoding())
 
 # Internal guard to prevent internal classes to be directly
 # instanciated.
@@ -108,7 +108,7 @@ def find_lib():
         p = find_library('libvlc.dll')
         if p is None:
             try:  # some registry settings
-                import _winreg as w  # leaner than win32api, win32con
+                import winreg as w  # leaner than win32api, win32con
                 for r in w.HKEY_LOCAL_MACHINE, w.HKEY_CURRENT_USER:
                     try:
                         r = w.OpenKey(r, 'Software\\VideoLAN\\VLC')
@@ -166,7 +166,7 @@ class VLCException(Exception):
     pass
 
 try:
-    _Ints = (int, long)
+    _Ints = (int, int)
 except NameError:  # no long in Python 3+
     _Ints =  int
 _Seqs = (list, tuple)
@@ -1105,7 +1105,7 @@ def track_description_list(head):
         while item:
             item = item.contents
             r.append((item.id, item.name))
-            item = item.next
+            item = item.__next__
         try:
             libvlc_track_description_release(head)
         except NameError:
@@ -1162,7 +1162,7 @@ def module_description_list(head):
         while item:
             item = item.contents
             r.append((item.name, item.shortname, item.longname, item.help))
-            item = item.next
+            item = item.__next__
         libvlc_module_description_list_release(head)
     return r
 
@@ -1281,7 +1281,7 @@ class Instance(_Ctype):
             i = args[0]
             if isinstance(i, _Ints):
                 return _Constructor(cls, i)
-            elif isinstance(i, basestring):
+            elif isinstance(i, str):
                 args = i.strip().split()
             elif isinstance(i, _Seqs):
                 args = i
@@ -1371,7 +1371,7 @@ class Instance(_Ctype):
                       'longname': libvlc_audio_output_device_longname(self, i.name, d)}
                    for d in range(libvlc_audio_output_device_count   (self, i.name))]
                 r.append({'name': i.name, 'description': i.description, 'devices': d})
-                i = i.next
+                i = i.__next__
             libvlc_audio_output_list_release(head)
         return r
 
@@ -2039,7 +2039,7 @@ class MediaList(_Ctype):
         @param mrl: a media instance or a MRL.
         @return: 0 on success, -1 if the media list is read-only.
         """
-        if isinstance(mrl, basestring):
+        if isinstance(mrl, str):
             mrl = (self.get_instance() or get_default_instance()).media_new(mrl)
         return libvlc_media_list_add_media(self, mrl)
 
@@ -2253,7 +2253,7 @@ class MediaListPlayer(_Ctype):
         '''
         return libvlc_media_list_player_stop(self)
 
-    def next(self):
+    def __next__(self):
         '''Play next item from media list.
         @return: 0 upon success -1 if there is no next item.
         '''
@@ -5875,10 +5875,10 @@ def debug_callback(event, *args, **kwds):
     '''
     l = ['event %s' % (event.type,)]
     if args:
-        l.extend(map(str, args))
+        l.extend(list(map(str, args)))
     if kwds:
-        l.extend(sorted('%s=%s' % t for t in kwds.items()))
-    print('Debug callback (%s)' % ', '.join(l))
+        l.extend(sorted('%s=%s' % t for t in list(kwds.items())))
+    print(('Debug callback (%s)' % ', '.join(l)))
 
 if __name__ == '__main__':
 
@@ -5899,7 +5899,7 @@ if __name__ == '__main__':
             return ch
 
     def end_callback(event):
-        print('End of media stream (event %s)' % event.type)
+        print(('End of media stream (event %s)' % event.type))
         sys.exit(0)
 
     echo_position = False
@@ -5913,28 +5913,28 @@ if __name__ == '__main__':
     def print_version():
         """Print libvlc version"""
         try:
-            print('Build date: %s (%#x)' % (build_date, hex_version()))
-            print('LibVLC version: %s (%#x)' % (bytes_to_str(libvlc_get_version()), libvlc_hex_version()))
-            print('LibVLC compiler: %s' % bytes_to_str(libvlc_get_compiler()))
+            print(('Build date: %s (%#x)' % (build_date, hex_version())))
+            print(('LibVLC version: %s (%#x)' % (bytes_to_str(libvlc_get_version()), libvlc_hex_version())))
+            print(('LibVLC compiler: %s' % bytes_to_str(libvlc_get_compiler())))
             if plugin_path:
-                print('Plugin path: %s' % plugin_path)
+                print(('Plugin path: %s' % plugin_path))
         except:
-            print('Error: %s' % sys.exc_info()[1])
+            print(('Error: %s' % sys.exc_info()[1]))
 
     if sys.argv[1:] and sys.argv[1] not in ('-h', '--help'):
 
         movie = os.path.expanduser(sys.argv[1])
         if not os.access(movie, os.R_OK):
-            print('Error: %s file not readable' % movie)
+            print(('Error: %s file not readable' % movie))
             sys.exit(1)
 
         instance = Instance("--sub-source marq")
         try:
             media = instance.media_new(movie)
         except NameError:
-            print('NameError: %s (%s vs LibVLC %s)' % (sys.exc_info()[1],
+            print(('NameError: %s (%s vs LibVLC %s)' % (sys.exc_info()[1],
                                                        __version__,
-                                                       libvlc_get_version()))
+                                                       libvlc_get_version())))
             sys.exit(1)
         player = instance.media_player_new()
         player.set_media(media)
@@ -5972,19 +5972,19 @@ if __name__ == '__main__':
             try:
                 print_version()
                 media = player.get_media()
-                print('State: %s' % player.get_state())
-                print('Media: %s' % bytes_to_str(media.get_mrl()))
-                print('Track: %s/%s' % (player.video_get_track(), player.video_get_track_count()))
-                print('Current time: %s/%s' % (player.get_time(), media.get_duration()))
-                print('Position: %s' % player.get_position())
-                print('FPS: %s (%d ms)' % (player.get_fps(), mspf()))
-                print('Rate: %s' % player.get_rate())
-                print('Video size: %s' % str(player.video_get_size(0)))  # num=0
-                print('Scale: %s' % player.video_get_scale())
-                print('Aspect ratio: %s' % player.video_get_aspect_ratio())
+                print(('State: %s' % player.get_state()))
+                print(('Media: %s' % bytes_to_str(media.get_mrl())))
+                print(('Track: %s/%s' % (player.video_get_track(), player.video_get_track_count())))
+                print(('Current time: %s/%s' % (player.get_time(), media.get_duration())))
+                print(('Position: %s' % player.get_position()))
+                print(('FPS: %s (%d ms)' % (player.get_fps(), mspf())))
+                print(('Rate: %s' % player.get_rate()))
+                print(('Video size: %s' % str(player.video_get_size(0))))  # num=0
+                print(('Scale: %s' % player.video_get_scale()))
+                print(('Aspect ratio: %s' % player.video_get_aspect_ratio()))
                #print('Window:' % player.get_hwnd()
             except Exception:
-                print('Error: %s' % sys.exc_info()[1])
+                print(('Error: %s' % sys.exc_info()[1]))
 
         def sec_forward():
             """Go forward one sec"""
@@ -6007,7 +6007,7 @@ if __name__ == '__main__':
             print('Single-character commands:')
             for k, m in sorted(keybindings.items()):
                 m = (m.__doc__ or m.__name__).splitlines()[0]
-                print('  %s: %s.' % (k, m.rstrip('.')))
+                print(('  %s: %s.' % (k, m.rstrip('.'))))
             print('0-9: go to that fraction of the movie')
 
         def quit_app():
@@ -6032,10 +6032,10 @@ if __name__ == '__main__':
             '?': print_help,
             }
 
-        print('Press q to quit, ? to get help.%s' % os.linesep)
+        print(('Press q to quit, ? to get help.%s' % os.linesep))
         while True:
             k = getch()
-            print('> %s' % k)
+            print(('> %s' % k))
             if k in keybindings:
                 keybindings[k]()
             elif k.isdigit():
@@ -6043,7 +6043,7 @@ if __name__ == '__main__':
                 player.set_position(float('0.'+k))
 
     else:
-        print('Usage: %s <movie_filename>' % sys.argv[0])
+        print(('Usage: %s <movie_filename>' % sys.argv[0]))
         print('Once launched, type ? for help.')
         print('')
         print_version()

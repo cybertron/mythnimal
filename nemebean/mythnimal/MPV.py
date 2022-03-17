@@ -18,9 +18,9 @@
 # Copyright 2012, 2013 Ben Nemec
 # @End License@
 
-from Settings import settings
+from .Settings import settings
 from PyQt5.QtCore import *
-import time, sys, os, json, socket, Queue
+import time, sys, os, json, socket, queue
 
 class MPV(QObject):
    fileFinished = pyqtSignal()
@@ -90,7 +90,7 @@ class MPV(QObject):
       #fullCommand += ' ' + self.extraOptions
       fullCommand += ' ' + self.filename
       if self.process.state() == QProcess.NotRunning:
-         print "MPV Command:", fullCommand
+         print("MPV Command:", fullCommand)
          self.process.start(fullCommand)
 
 
@@ -113,7 +113,7 @@ class MPV(QObject):
       
    def seekRelative(self, amount):
       """Seek relative to the current position"""
-      print 'Seeking:', amount
+      print('Seeking:', amount)
       self.sendCommand(['seek', amount])
          
    
@@ -128,11 +128,11 @@ class MPV(QObject):
          command = json.dumps(data)
          #print command
          try:
-            self.socket.send(command + '\n')
+            self.socket.send(command.encode() + b'\n')
             self.commandQueue.put(cmd)
          except socket.error as e:
             if e.errno == 32:
-               print 'MPV has gone away'
+               print('MPV has gone away')
             else:
                raise
          
@@ -146,11 +146,11 @@ class MPV(QObject):
       self.socket = socket.socket(socket.AF_UNIX)
       try:
          self.socket.connect('/tmp/mythnimal')
-         print 'Connected to MPV socket'
+         print('Connected to MPV socket')
       except socket.error as e:
          self.socket = None
          if e.errno == 111:
-            print 'MPV not yet accepting connections.'
+            print('MPV not yet accepting connections.')
          else:
             raise
             
@@ -169,7 +169,7 @@ class MPV(QObject):
       # function gets called repeatedly anyway and handles partial data, it should
       # be fine to do it this way.
       try:
-         self.socketBuffer += self.socket.recv(4096, socket.MSG_DONTWAIT)
+         self.socketBuffer += self.socket.recv(4096, socket.MSG_DONTWAIT).decode()
       except socket.error as e:
          if e.errno != 11:
             raise
@@ -191,7 +191,7 @@ class MPV(QObject):
             if error == 'success':
                self.handleCommand(command, data.get('data'))
             else:
-               print 'MPV command "%s" failed due to "%s"' % (command, error)
+               print('MPV command "%s" failed due to "%s"' % (command, error))
          
       # If the last line was not completely received, put it back in the buffer
       if not self.socketBuffer.endswith('\n'):
@@ -205,7 +205,7 @@ class MPV(QObject):
          try:
             data = float(data)
          except ValueError:
-            print 'Got bad length value:', data
+            print('Got bad length value:', data)
             data = 0
          if data >= self.position:
             self.length = data
@@ -237,7 +237,7 @@ class MPV(QObject):
    def readStdout(self):
       lines = self.process.readAllStandardOutput().data().splitlines()
       for line in lines:
-         print "MPV:", line
+         print("MPV:", line)
 
       sys.stdout.flush()
 
@@ -257,7 +257,7 @@ class MPV(QObject):
       self.position = 0
       self.socket = None
       self.socketBuffer = ''
-      self.commandQueue = Queue.Queue()
+      self.commandQueue = queue.Queue()
 
 
    def finished(self):
@@ -286,5 +286,5 @@ class MPV(QObject):
    def infoStdout(self):
       lines = self.infoProcess.readAllStandardOutput().data().splitlines()
       for line in lines:
-         if line.find("duration::") != -1:
-            self.length = float(line.split('::')[1])
+         if line.find(b"duration::") != -1:
+            self.length = float(line.split(b'::')[1])

@@ -19,7 +19,7 @@
 from PyQt5.QtWidgets import QWidget, QHBoxLayout
 from PyQt5.QtGui import QPalette, QColor
 from PyQt5.QtCore import Qt, pyqtSignal
-from ScaledLabel import ScaledLabel
+from .ScaledLabel import ScaledLabel
 
 class MenuItem(QWidget):
    """Base class for items that can be inserted into a MenuWidget"""
@@ -60,7 +60,7 @@ class SimpleMenuItem(MenuItem):
       
    
    
-from MythDBObjects import Program
+from .MythDBObjects import Program
 
 class ProgramMenuItem(MenuItem):
    def __init__(self, programData):

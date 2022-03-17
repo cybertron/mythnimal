@@ -21,14 +21,14 @@ from sqlalchemy.orm import sessionmaker
 from PyQt5.QtCore import QTimer
 import datetime
 import os
-from MythDBObjects import *
+from .MythDBObjects import *
 
 class MythDB:
    # Schema versions not listed here may not work
    supportedSchemas = [1264, 1299, 1317, 1348]
-   disableWrites = False
+   disableWrites = True
    def __init__(self, host, user, password):
-      self.engine = create_engine('mysql://' + user + ':' + password + '@' + host + '/mythconverg')
+      self.engine = create_engine('mysql+pymysql://' + user + ':' + password + '@' + host + '/mythconverg')
       
       Session = sessionmaker(bind=self.engine)
       self.session = Session()
@@ -135,7 +135,7 @@ class MythDB:
       if self.writes:
          self.session.commit()
       else:
-         print 'Warning: Unsupported DB schema.  Not committing changes'
+         print('Warning: Unsupported DB schema.  Not committing changes')
          self.session.rollback()
       
       
